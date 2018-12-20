@@ -3,7 +3,12 @@
 
 # Author: Zhang Shengde <zhangshd@foxmail.com>
 
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
+from sklearn.svm import SVR,SVC
 import pandas as pd
+
+__all__ = ["correlationSelection","RFE_ranking"]
 
 class correlationSelection(object):
     def __init__(self):
@@ -44,6 +49,43 @@ class correlationSelection(object):
         # ### 从high_corrXY_list中删掉del_list_XX中包含的所有feature
         self.selected_feature = self.high_corrXY_list.drop(self.del_list_XX)
         self.selected_tr_x = tr_x.loc[:,self.selected_feature]
+        
+class RFE_ranking(object):
+    """用于分类任务的'Recursive Feature Elimination'方法"""
+    def __init__(self,estimator,features_num=1,**params):
+        """
+        参数：
+        -----
+        estimator: string或object型，指定学习器对象，string型仅限于'SVC'、'SVR'、'RFC'、'RFR'
+        features_num: int型，递归完成后留下的特征数量(设置为1则能够让每个特征都有唯一的排名次序)，
+                      对应sklearn的RFE中'n_features_to_select'参数
+        **params: 学习器的超参数，如SVM有C、gamma、epsilon等，RF有n_estimators、max_leaf_nodes、random_state等"""
+        self.feature_num = features_num
+        if type(estimator) == str:
+            if estimator == 'SVC':
+                self.estimator = SVC(kernel='linear')
+            elif estimator == 'SVR':
+                self.estimator = SVR(kernel='linear')
+            elif estimator == 'RFC':
+                self.estimator = RandomForestClassifier(n_estimators=50,random_state=0,n_jobs=-1)
+            elif estimator == 'RFR':
+                self.estimator = RandomForestRegressor(n_estimators=50,random_state=0,n_jobs=-1)
+            else:
+                print("通过字符串指定estimator仅限于'SVC'、'SVR'、'RFC'、'RFR'!")
+        else:
+            self.estimator = estimator
+        if len(params) != 0:
+            self.estimator.set_params(**params)
+            
+    def fit(self,tr_scaled_x,tr_y):
+        """执行RFE
+        参数：
+        -----
+        tr_scaled_x: DataFrame类型(连续型数据要经过压缩或标准化处理)，样本feature数据
+        tr_y: array样类型(一维)，样本label数据，长度(行数)需与tr_scaled_x一致"""
+        self.filter = RFE(estimator=self.estimator, n_features_to_select=self.feature_num).fit(tr_scaled_x, tr_y)
+        self.descriptors_list = pd.Series(index=self.filter.ranking_,data=tr_scaled_x.columns).sort_index().tolist()
+        self.tr_ranked_x = tr_scaled_x.loc[:,self.descriptors_list]
         
 
 if __name__ == '__main__':

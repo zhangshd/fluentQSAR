@@ -17,7 +17,7 @@ class classificationRFE(object):
                       对应sklearn的RFE中'n_features_to_select'参数"""
         self.feature_num = features_num
         
-    def RF_RFE(self,tr_scaled_x,tr_y,n_estimators=10,random_state=0):
+    def RF_RFE(self,tr_scaled_x,tr_y,n_estimators=50,random_state=0):
         """使用随机森林学习器的RFE
         参数：
         -----
@@ -30,7 +30,7 @@ class classificationRFE(object):
         self.descriptors_list = pd.Series(index=self.filter.ranking_,data=tr_scaled_x.columns).sort_index().tolist()
         self.tr_x_ranked = tr_scaled_x.loc[:,self.descriptors_list]
         
-    def SVM_RFE(self,tr_scaled_x,tr_y,C=1.0,epsilon=0.1):
+    def SVM_RFE(self,tr_scaled_x,tr_y,C=1.0):
         """使用线性SVM(只有线性核的SVM能用于RFE)学习器的RFE
         参数：
         -----
@@ -52,7 +52,7 @@ class classificationRFE(object):
 class regressionRFE(classificationRFE):
     """用于回归任务的'Recursive Feature Elimination'方法"""
     
-    def RF_RFE(self,tr_scaled_x,tr_y,n_estimators=10,random_state=0):
+    def RF_RFE(self,tr_scaled_x,tr_y,n_estimators=50,random_state=0):
         """使用随机森林学习器的RFE
         参数：
         -----

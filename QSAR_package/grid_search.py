@@ -27,6 +27,7 @@ class gridSearchBase(object):
            stratified：bool型，决定是否采用分层抽取来产生交叉验证数据集"""
         self.fold = fold
         self.grid_estimator = grid_estimator
+        self.best_estimator = grid_estimator
         self.grid_dict = grid_dict
         self.repeat = repeat
         self.scoreThreshold = scoreThreshold
@@ -48,6 +49,7 @@ class gridSearchBase(object):
             self.grid_cv = [StratifiedKFold(n_splits=self.fold, shuffle=True,random_state=10*i) for i in range(self.repeat)]
         else:
             self.grid_cv = [KFold(n_splits=self.fold, shuffle=True,random_state=10*i) for i in range(self.repeat)]
+    
     def __sec2time(self,seconds):  # convert seconds to time
         m, s = divmod(int(seconds), 60)
         h, m = divmod(m, 60)
@@ -92,6 +94,9 @@ class gridSearchBase(object):
             self.cv_results["mean"] = self.cv_results.mean_test_score.mean(axis=1)
             self.cv_results.sort_values(by="mean",ascending=False,inplace=True)
             self.best_params = self.cv_results.iloc[0,0]
+            self.best_features = tr_scaled_x.columns
+            self.best_estimator.set_params(**self.best_params)
+            self.best_estimator.fit(tr_scaled_x, tr_y)
             print('{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
                  .format(self.repeat,self.__sec2time(time()-t0)))
     
@@ -160,7 +165,9 @@ class gridSearchBase(object):
             self.cv_results["mean"] = self.cv_results.mean_test_score.mean(axis=1)
             self.cv_results.sort_values(by="mean",ascending=False,inplace=True)
             self.best_params = self.cv_results.iloc[0,0]
-            self.best_features = tr_scaled_x.iloc[:,:self.grid.cv_results.iloc[0,-2]].columns
+            self.best_features = tr_scaled_x.iloc[:,:self.cv_results.iloc[0,-2]].columns
+            self.best_estimator.set_params(**self.best_params)
+            self.best_estimator.fit(tr_scaled_x.loc[:,self.best_features], tr_y)
             print('{}×{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
             .format(len(range(*self.features_range)),self.repeat,self.__sec2time(time()-t0)))
             
@@ -183,6 +190,7 @@ class gridSearchPlus(gridSearchBase):
         self.scoreThreshold = scoreThreshold
         super()._gridSearchBase__stratify(stratified)
         self.__selectEstimator()
+        self.best_estimator = self.grid_estimator
         
     def __selectEstimator(self):
         """根据输入grid_estimatorName选择使用的算法及其对应的寻优参数字典"""
@@ -209,8 +217,8 @@ class gridSearchPlus(gridSearchBase):
                                   'epsilon':[2**i for i in range(-15,0)]}
                 self.grid_estimator = SVR()
             if self.__grid_estimatorName == 'RFR':
-                self.grid_dict = {'max_leaf_nodes':[i for i in range(10,51,2)],
-                                  'n_estimators':[i for i in range(10,101,5)]}
+                self.grid_dict = {'max_leaf_nodes':[i for i in range(20,51,2)],
+                                  'n_estimators':[i for i in range(50,101,5)]}
                 self.grid_estimator = RandomForestRegressor(random_state=self.random_state)
 
 if __name__ == '__main__':

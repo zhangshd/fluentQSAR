@@ -4,6 +4,8 @@
 
 import pandas as pd
 
+__all__ = ["dataScale"]
+
 class dataScale(object):
     def __init__(self,feature_range=(0.1, 0.9)):
         """数据区间压缩，只压缩连续型数据，二进制数据不压缩，被压缩的数据必须包含拟合压缩器所用的所有feature
