@@ -3,7 +3,7 @@
 # Author: Zhang Shengde <zhangshd@foxmail.com>
 
 from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absolute_error,mean_squared_error
-from sklearn.model_selection import cross_val_predict,LeaveOneOut
+from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -86,8 +86,14 @@ class modeling(object):
         """进行交互检验预测(训练集)，并且评价预测结果，预测结果评价存放于cv_metrics属性，使用此方法前必须先fit
            参数：
            -----
-           cv：object型，交互检验生成器如Kfold、LeaveOneOut等"""
-        self.cv_pred_y = cross_val_predict(self.estimator,self.tr_scaled_x,y=self.tr_y,n_jobs=-1,cv=cv)
+           cv：int、string或object型，指定交互检验生成器如Kfold、LeaveOneOut等"""
+        if type(cv) == int:
+            self.cv = KFold(n_splits=cv, shuffle=True,random_state=0)
+        elif cv == 'LOO':
+            self.cv = LeaveOneOut()
+        else:
+            self.cv = cv
+        self.cv_pred_y = cross_val_predict(self.estimator,self.tr_scaled_x,y=self.tr_y,n_jobs=-1,cv=self.cv)
         self.cv_evaluator = modelEvaluator(self.tr_y,self.cv_pred_y,model_kind='rgr')
         self.cv_metrics = dict(self.cv_evaluator.__dict__.items())
     def show_results(self):
