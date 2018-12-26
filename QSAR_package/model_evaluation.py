@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absol
 from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold
 import matplotlib.pyplot as plt
 import pandas as pd
+import copy
 
 __all__ = ["modelEvaluator","modeling"]
 
@@ -26,6 +27,8 @@ class modelEvaluator(object):
     def __clf_metrics(self,y_true,y_pred):
         """计算二分类模型预测结果的TP、TN、FP、FN以及accuracy、MCC、SE、SP"""
         
+        self.accuracy = accuracy_score(y_true, y_pred)
+        self.MCC = matthews_corrcoef(y_true, y_pred)
         self.tp = 0
         self.fp = 0
         self.tn = 0
@@ -41,17 +44,23 @@ class modelEvaluator(object):
                 self.tn += 1
         self.se = float(self.tp) / float(self.tp + self.fn)
         self.sp = float(self.tn) / float(self.tn + self.fp) 
-        self.accuracy = accuracy_score(y_true, y_pred)
-        self.MCC      = matthews_corrcoef(y_true, y_pred)
         
     def __rgr_metrics(self,y_true,y_pred):
         """计算回归模型预测结果的R2、RMSE、MAE"""
         self.R2 = r2_score(y_true, y_pred)
-        self.RMSE = (mean_squared_error(y_true, y_pred))**0.5
-        self.MAE = mean_absolute_error(y_true, y_pred)
+        self.MSE = mean_squared_error(y_true, y_pred)
+        # self.MAE = mean_absolute_error(y_true, y_pred)
     
 class modeling(object):
-    """拟合模型(训练集)及评价，预测样本(测试集)及评价，交互检验(训练集)及评价"""
+    """拟合模型(训练集)及评价，预测样本(测试集)及评价，交互检验(训练集)及评价
+    example：
+    --------
+    model = modeling(estimator,params=best_params)
+    model.fit(tr_scaled_x.loc[:,grid.best_features], tr_y)
+    model.predict(te_scaled_x.loc[:,grid.best_features],te_y)
+    model.cross_val(cv='LOO')
+    model.save_results(res_path)
+    model.show_results()"""
     def __init__(self,estimator,params=None):
         """参数：
            -----
@@ -59,7 +68,11 @@ class modeling(object):
            params：无或dict型，如果传入参数字典，则会重设学习器的超参数"""
         self.estimator = estimator
         if params is not None:
+            self.params = params
             self.estimator.set_params(**params)
+        else:
+            self.params = self.estimator.get_params()
+            
     def fit(self,tr_scaled_x,tr_y):
         """拟合模型，并且评价训练集预测结果，预测结果评价存放于tr_metrics属性
            参数：
@@ -105,6 +118,31 @@ class modeling(object):
         plt.plot([axisMin,axisMax],[axisMin,axisMax],'k')
         plt.axis([axisMin,axisMax,axisMin,axisMax])
         plt.show()
+    def save_results(self,res_path):
+        """将模型结果保存至CSV文件中
+        参数：
+        -----
+        res_path：string型，结果文件的路径，如果是已存在的文件则追加行"""
+        metrics = []
+        for s in ['tr_','cv_','te_']:
+            metrics_ = copy.deepcopy(eval('self.{}metrics'.format(s)))
+            for k in copy.deepcopy(list(metrics_.keys())):
+                metrics_[s+k]=metrics_.pop(k)
+            metrics.append(metrics_)
+        all_metrics = dict(metrics[0],**metrics[1],**metrics[2])
+        self.results_df = pd.DataFrame(all_metrics,index=[0])
+        self.estimatorName = str(self.estimator)[:str(self.estimator).find("(")]
+        self.results_df.insert(0,'params',str(self.params))
+        self.results_df.insert(0,'algorithm',str(self.estimatorName))
+        self.results_df.insert(0,'n_features',self.tr_scaled_x.shape[1])
+
+        try:
+            with open(res_path) as testfile:
+                pass
+        except IOError:
+            with open(res_path,mode='w') as fobj:
+                fobj.write(','.join(self.results_df.columns)+'\n')
+        self.results_df.to_csv(res_path,index=False,header=False,mode='a',float_format='%6.4f')
 
 
 if __name__ == '__main__':

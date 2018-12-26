@@ -170,6 +170,8 @@ class gridSearchBase(object):
             self.best_estimator.fit(tr_scaled_x.loc[:,self.best_features], tr_y)
             print('{}×{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
             .format(len(range(*self.features_range)),self.repeat,self.__sec2time(time()-t0)))
+    def saveGridCVresults(self,path):
+        self.cv_results.to_csv(path,index=False)
             
         
 class gridSearchPlus(gridSearchBase):
@@ -217,8 +219,8 @@ class gridSearchPlus(gridSearchBase):
                                   'epsilon':[2**i for i in range(-15,0)]}
                 self.grid_estimator = SVR()
             if self.__grid_estimatorName == 'RFR':
-                self.grid_dict = {'max_leaf_nodes':[i for i in range(20,51,2)],
-                                  'n_estimators':[i for i in range(50,101,5)]}
+                self.grid_dict = {'max_leaf_nodes':[i for i in range(20,81,2)],
+                                  'n_estimators':[i for i in range(50,101,10)]}
                 self.grid_estimator = RandomForestRegressor(random_state=self.random_state)
 
 if __name__ == '__main__':
