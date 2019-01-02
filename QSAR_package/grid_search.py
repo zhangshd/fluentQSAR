@@ -31,10 +31,10 @@ class gridSearchBase(object):
         self.grid_dict = grid_dict
         self.repeat = repeat
         self.scoreThreshold = scoreThreshold
-        self.__stratify(stratified)
-        self.__scorer(grid_scorer)
+        self.__Stratify(stratified)
+        self.__Scorer(grid_scorer)
     
-    def __scorer(self,grid_scorer):
+    def __Scorer(self,grid_scorer):
         if grid_scorer == 'accuracy':
             self.grid_scorer = make_scorer(accuracy_score,greater_is_better=True)
             
@@ -44,19 +44,19 @@ class gridSearchBase(object):
         else:
             self.grid_scorer = grid_scorer
     
-    def __stratify(self,stratified): 
+    def __Stratify(self,stratified): 
         if stratified == True:
             self.grid_cv = [StratifiedKFold(n_splits=self.fold, shuffle=True,random_state=10*i) for i in range(self.repeat)]
         else:
             self.grid_cv = [KFold(n_splits=self.fold, shuffle=True,random_state=10*i) for i in range(self.repeat)]
     
-    def __sec2time(self,seconds):  # convert seconds to time
+    def __Sec2Time(self,seconds):  # convert seconds to time
         m, s = divmod(int(seconds), 60)
         h, m = divmod(m, 60)
         return ("{:02d}h:{:02d}m:{:02d}s".format(h, m, s))
     
     
-    def fit(self,tr_scaled_x, tr_y,verbose=True):
+    def Fit(self,tr_scaled_x, tr_y,verbose=True):
         """执行gridsearch
            参数：
            -----
@@ -69,7 +69,7 @@ class gridSearchBase(object):
                                      cv=self.grid_cv[i],n_jobs=-1,return_train_score=False)
             self.grid.fit(tr_scaled_x, tr_y)
             if verbose:
-                print("第{}/{}次gridsearch，此轮耗时{}".format(i+1,self.repeat,self.__sec2time(time()-t1)))
+                print("第{}/{}次gridsearch，此轮耗时{}".format(i+1,self.repeat,self.__Sec2Time(time()-t1)))
             if i == 0:
                 self.cv_results = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
                 if self.scoreThreshold == None:
@@ -98,11 +98,11 @@ class gridSearchBase(object):
             self.best_estimator.set_params(**self.best_params)
             self.best_estimator.fit(tr_scaled_x, tr_y)
             print('{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
-                 .format(self.repeat,self.__sec2time(time()-t0)))
+                 .format(self.repeat,self.__Sec2Time(time()-t0)))
     
     
     
-    def fit_with_nFeatures(self,tr_scaled_x,tr_y,features_range=None,verbose=True):
+    def FitWithFeaturesNum(self,tr_scaled_x,tr_y,features_range=None,verbose=True):
         """执行带描述符数量迭代的gridsearch
            参数：
            -----
@@ -126,7 +126,7 @@ class gridSearchBase(object):
                                          cv=self.grid_cv[j],n_jobs=-1,return_train_score=False)
                 self.grid.fit(tr_scaled_x.iloc[:,:i], tr_y)
                 if verbose:
-                    print("{}个特征，第{}/{}次gridsearch，此轮耗时{}".format(i,j+1,self.repeat,self.__sec2time(time()-t1)))
+                    print("{}个特征，第{}/{}次gridsearch，此轮耗时{}".format(i,j+1,self.repeat,self.__Sec2Time(time()-t1)))
                 if j == 0:
                     temp0 = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
                     if self.scoreThreshold == None:
@@ -169,8 +169,8 @@ class gridSearchBase(object):
             self.best_estimator.set_params(**self.best_params)
             self.best_estimator.fit(tr_scaled_x.loc[:,self.best_features], tr_y)
             print('{}×{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
-            .format(len(range(*self.features_range)),self.repeat,self.__sec2time(time()-t0)))
-    def saveGridCVresults(self,path):
+            .format(len(range(*self.features_range)),self.repeat,self.__Sec2Time(time()-t0)))
+    def SaveGridCVresults(self,path):
         self.cv_results.to_csv(path,index=False)
             
         
@@ -190,11 +190,11 @@ class gridSearchPlus(gridSearchBase):
         self.repeat = repeat
         self.random_state = random_state
         self.scoreThreshold = scoreThreshold
-        super()._gridSearchBase__stratify(stratified)
-        self.__selectEstimator()
+        super()._gridSearchBase__Stratify(stratified)
+        self.__SelectEstimator()
         self.best_estimator = self.grid_estimator
         
-    def __selectEstimator(self):
+    def __SelectEstimator(self):
         """根据输入grid_estimatorName选择使用的算法及其对应的寻优参数字典"""
         if self.__grid_estimatorName[-1] == 'C':
             self.grid_scorer = make_scorer(accuracy_score,greater_is_better=True)   # 分类任务选择准确率打分器
@@ -219,7 +219,7 @@ class gridSearchPlus(gridSearchBase):
                                   'epsilon':[2**i for i in range(-15,0)]}
                 self.grid_estimator = SVR()
             if self.__grid_estimatorName == 'RFR':
-                self.grid_dict = {'max_leaf_nodes':[i for i in range(20,81,2)],
+                self.grid_dict = {'max_leaf_nodes':[i for i in range(20,61,2)],
                                   'n_estimators':[i for i in range(50,101,10)]}
                 self.grid_estimator = RandomForestRegressor(random_state=self.random_state)
 

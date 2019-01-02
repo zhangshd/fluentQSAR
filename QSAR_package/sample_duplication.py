@@ -5,7 +5,7 @@
 from rdkit import Chem
 import numpy as np
 
-class DuplicateSmiles(object):
+class duplicateByInchiKey(object):
     """
     """
     def __init__(self):

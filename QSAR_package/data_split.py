@@ -23,7 +23,7 @@ class extractData(object):
         data_path：string型，总数据集文件路径
         label_name：string型，label列的名字"""
         self.init_df = pd.read_csv(data_path,dtype=np.str)
-        self.norm_df = self.init_df.loc[:,label_name:].astype(np.float64)
+        self.norm_df = self.init_df.loc[:,label_name:].astype(np.float32)
     def ExtractTrainTestData(self,train_path,test_path,label_name='pIC50',int_y=False):
         """从训练集、测试集文件提取训练集测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
         参数：
@@ -69,9 +69,9 @@ class randomSpliter(extractData):
        -------------以下为必要步骤-----------------
        spliter = randomSpliter(test_size=0.25,random_state=0)
        spliter.ExtractTotalData(data_path)
-       spliter.splitRegressionData()
+       spliter.SplitRegressionData()
        -------------以下为可选步骤-----------------
-       spliter.saveTrainTestLabel(trOte_path)"""
+       spliter.SaveTrainTestLabel(trOte_path)"""
     def __init__(self,test_size=0.25,random_state=0):
         """参数：
            -----
@@ -82,7 +82,7 @@ class randomSpliter(extractData):
         self.random_state = random_state
         
     
-    def splitClassificationData(self):
+    def SplitClassificationData(self):
         """把用于分类建模的数据集分为训练集和测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
            
            参数：
@@ -102,7 +102,7 @@ class randomSpliter(extractData):
         self.tr_y = self.label_all[self.tr_ids]
         self.te_y = self.label_all[self.te_ids]
 
-    def splitRegressionData(self):
+    def SplitRegressionData(self):
         """把用于回归建模的数据集分为训练集和测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
            
            参数：
@@ -124,7 +124,7 @@ class randomSpliter(extractData):
         self.tr_y = self.label_all[self.tr_ids]
         self.te_y = self.label_all[self.te_ids]
         
-    def saveTrainTestLabel(self,trOte_path):
+    def SaveTrainTestLabel(self,trOte_path):
         """将训练集测试集的划分结果以"tr"、"te"标签的形式保存到文件
         参数：
         -----

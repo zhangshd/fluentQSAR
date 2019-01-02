@@ -20,15 +20,15 @@ class modelEvaluator(object):
            model_kind：string型，模型类型，'clf'(分类)或'rgr'(回归)"""
         
         if model_kind == 'clf':
-            self.__clf_metrics(y_true,y_pred)
+            self.__Clf_metrics(y_true,y_pred)
         if model_kind == 'rgr':
-            self.__rgr_metrics(y_true,y_pred)
+            self.__Rgr_metrics(y_true,y_pred)
             
-    def __clf_metrics(self,y_true,y_pred):
+    def __Clf_metrics(self,y_true,y_pred):
         """计算二分类模型预测结果的TP、TN、FP、FN以及accuracy、MCC、SE、SP"""
         
         self.accuracy = accuracy_score(y_true, y_pred)
-        self.MCC = matthews_corrcoef(y_true, y_pred)
+        self.mcc = matthews_corrcoef(y_true, y_pred)
         self.tp = 0
         self.fp = 0
         self.tn = 0
@@ -45,22 +45,22 @@ class modelEvaluator(object):
         self.se = float(self.tp) / float(self.tp + self.fn)
         self.sp = float(self.tn) / float(self.tn + self.fp) 
         
-    def __rgr_metrics(self,y_true,y_pred):
+    def __Rgr_metrics(self,y_true,y_pred):
         """计算回归模型预测结果的R2、RMSE、MAE"""
-        self.R2 = r2_score(y_true, y_pred)
-        self.MSE = mean_squared_error(y_true, y_pred)
-        # self.MAE = mean_absolute_error(y_true, y_pred)
+        self.r2 = round(r2_score(y_true, y_pred),4)
+        self.mse = round(mean_squared_error(y_true, y_pred),4)
+        # self.mae = mean_absolute_error(y_true, y_pred)
     
 class modeling(object):
     """拟合模型(训练集)及评价，预测样本(测试集)及评价，交互检验(训练集)及评价
     example：
     --------
     model = modeling(estimator,params=best_params)
-    model.fit(tr_scaled_x.loc[:,grid.best_features], tr_y)
-    model.predict(te_scaled_x.loc[:,grid.best_features],te_y)
-    model.cross_val(cv='LOO')
-    model.save_results(res_path)
-    model.show_results()"""
+    model.Fit(tr_scaled_x.loc[:,grid.best_features], tr_y)
+    model.Predict(te_scaled_x.loc[:,grid.best_features],te_y)
+    model.CrossVal(cv='LOO')
+    model.SaveResults(res_path)
+    model.ShowResults()"""
     def __init__(self,estimator,params=None):
         """参数：
            -----
@@ -73,7 +73,7 @@ class modeling(object):
         else:
             self.params = self.estimator.get_params()
             
-    def fit(self,tr_scaled_x,tr_y):
+    def Fit(self,tr_scaled_x,tr_y):
         """拟合模型，并且评价训练集预测结果，预测结果评价存放于tr_metrics属性
            参数：
            -----
@@ -85,7 +85,7 @@ class modeling(object):
         self.tr_pred_y = self.estimator.predict(tr_scaled_x)
         self.tr_evaluator = modelEvaluator(self.tr_y,self.tr_pred_y,model_kind='rgr')
         self.tr_metrics = dict(self.tr_evaluator.__dict__.items())
-    def predict(self,te_scaled_x,te_y):
+    def Predict(self,te_scaled_x,te_y):
         """预测样本(测试集)，并且评价(测试集)预测结果，预测结果评价存放于te_metrics属性参数：
            参数：
            -----
@@ -95,7 +95,7 @@ class modeling(object):
         self.te_pred_y = self.estimator.predict(te_scaled_x)
         self.te_evaluator = modelEvaluator(self.te_y,self.te_pred_y,model_kind='rgr')
         self.te_metrics = dict(self.te_evaluator.__dict__.items())
-    def cross_val(self,cv):
+    def CrossVal(self,cv):
         """进行交互检验预测(训练集)，并且评价预测结果，预测结果评价存放于cv_metrics属性，使用此方法前必须先fit
            参数：
            -----
@@ -109,20 +109,22 @@ class modeling(object):
         self.cv_pred_y = cross_val_predict(self.estimator,self.tr_scaled_x,y=self.tr_y,n_jobs=-1,cv=self.cv)
         self.cv_evaluator = modelEvaluator(self.tr_y,self.cv_pred_y,model_kind='rgr')
         self.cv_metrics = dict(self.cv_evaluator.__dict__.items())
-    def show_results(self):
+    def ShowResults(self):
         """打印模型所有评价结果(训练集预测结果、测试集预测结果、交互检验预测结果)，并且将训练集与测试集预测结果绘制散点图"""
         print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics,'cv':self.cv_metrics})))
-        axisMin,axisMax=min(self.tr_y.min(),self.te_y.min())-0.3,max(self.tr_y.max(),self.te_y.max())+0.3
+        axisMin = min(self.tr_y.min(),self.te_y.min(),self.tr_pred_y.min(),self.te_pred_y.min())-0.5
+        axisMax = max(self.tr_y.max(),self.te_y.max(),self.tr_pred_y.max(),self.te_pred_y.max())+0.5
         plt.plot(self.tr_y,self.tr_pred_y,'xb')
         plt.plot(self.te_y,self.te_pred_y,'+r')
         plt.plot([axisMin,axisMax],[axisMin,axisMax],'k')
         plt.axis([axisMin,axisMax,axisMin,axisMax])
         plt.show()
-    def save_results(self,res_path):
+    def SaveResults(self,res_path,notes=None):
         """将模型结果保存至CSV文件中
         参数：
         -----
-        res_path：string型，结果文件的路径，如果是已存在的文件则追加行"""
+        res_path：string型，结果文件的路径，如果是已存在的文件则追加行
+        notes：string型，可以添加结果备注信息"""
         metrics = []
         for s in ['tr_','cv_','te_']:
             metrics_ = copy.deepcopy(eval('self.{}metrics'.format(s)))
@@ -135,6 +137,8 @@ class modeling(object):
         self.results_df.insert(0,'params',str(self.params))
         self.results_df.insert(0,'algorithm',str(self.estimatorName))
         self.results_df.insert(0,'n_features',self.tr_scaled_x.shape[1])
+        if notes is not None:
+            self.results_df.insert(-1,'notes',notes)
 
         try:
             with open(res_path) as testfile:

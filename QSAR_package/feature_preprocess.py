@@ -11,10 +11,13 @@ import pandas as pd
 __all__ = ["correlationSelection","RFE_ranking"]
 
 class correlationSelection(object):
+    """Pearson相关系数筛选：
+        PearsonXY()：删除与label相关性小于设定值的features
+        PearsonXX()：删除与label相关性小于设定值的features，并且删除与label高相关特征的冗余特征(两两相关性大于设定值)"""
     def __init__(self):
         self.del_list_XX = []
         
-    def pearsonXY(self,tr_x,tr_y,threshold_low=0.1):
+    def PearsonXY(self,tr_x,tr_y,threshold_low=0.1):
         """找出与label的Pearson相关性大于设定值的feature
            
            参数:
@@ -22,11 +25,13 @@ class correlationSelection(object):
            tr_x: Dataframe类型，为所有样本待筛选的feature值
            tr_y: Series类型，为所有样本的label值
            threshold_low: float数值，范围(0,1)，label相关性的下界"""
-        self.corrXY = tr_x.corrwith(tr_y).abs()
+        self.adjustSTD = tr_x.std()/(tr_x.max()-tr_x.min())
+        self.corrXY = tr_x.loc[:,self.adjustSTD>self.adjustSTD.quantile(q=0.1)].corrwith(tr_y).abs()
         # ### 求出每个feature与label的Pearson相关性(取绝对值)，筛除相关性低于设定值的feature，并且将剩下的feature按相关性降序排序
         self.high_corrXY_list = self.corrXY[self.corrXY>threshold_low].sort_values(ascending=False,inplace=False).index
+        self.del_list_XY = tr_x.columns.drop(self.high_corrXY_list)
         
-    def pearsonXX(self,tr_x,tr_y,threshold_low=0.1,threshold_up=0.9):
+    def PearsonXX(self,tr_x,tr_y,threshold_low=0.1,threshold_up=0.9):
         """找出与label的Pearson相关性大于设定值的feature，对于两两Pearson相关性大于设定值的feature，再删除其中与label相关性较低者
            
            参数:
@@ -36,7 +41,7 @@ class correlationSelection(object):
            threshold_low: float数值，范围(0,1)，label相关性的下界
            threshold_up: float数值，范围(0,1)，两两相关性的上界"""
         # ### 求出每个feature与label的Pearson相关性，筛除相关性低于设定值的feature，并且将剩下的feature按相关性降序排序
-        self.pearsonXY(tr_x,tr_y,threshold_low=threshold_low)
+        self.PearsonXY(tr_x,tr_y,threshold_low=threshold_low)
         # ### 按相关性降序排列的feature从tr_x切片，再计算Pearson相关性矩阵(取绝对值)
         self.corrXX = tr_x.loc[:,self.high_corrXY_list].corr().abs()
         # ### 迭代矩阵对角线右上角的每行每列，如果发现有大于设定值的数值，则将该数值所对应的列名(feature)加到del_list_XX中
@@ -77,7 +82,7 @@ class RFE_ranking(object):
         if len(params) != 0:
             self.estimator.set_params(**params)
             
-    def fit(self,tr_scaled_x,tr_y):
+    def Fit(self,tr_scaled_x,tr_y):
         """执行RFE
         参数：
         -----
