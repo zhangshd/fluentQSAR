@@ -40,8 +40,8 @@ class extractData(object):
         self.te_y = self.norm_df.loc[:,label_name]
         del self.init_df,self.norm_df
         if int_y:
-            self.tr_y.astype(np.int8)
-            self.te_y.astype(np.int8)
+            self.tr_y = self.tr_y.astype(np.int8)
+            self.te_y = self.te_y.astype(np.int8)
     def ExtractTrainTestFromLabel(self,data_path,trOte_path,label_name='pIC50',int_y=False):
         """从总样本数据文件及训练集测试集标签文件(训练集、测试集分别以"tr"、"te"表示)提取训练集测试集，\
         \033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
