@@ -35,12 +35,14 @@ class dataScale(object):
                     如果为'test'，则将压缩后的数据存入属性self.te_scaled_x
            """
         if self.tr_min.min() == 0 and self.tr_max.max() == 1:
-            self.scaled_x = x
+            self.scaled_x = x.loc[:,self.feature]
         else:
             self.scaled_x = (x.loc[:,self.feature]-self.tr_min)/(self.tr_max-self.tr_min)*\
                             (self.feature_range[1]-self.feature_range[0])+self.feature_range[0]
         if DataSet == 'train':
             self.tr_scaled_x = self.scaled_x
+        elif DataSet == 'validation':
+            self.val_scaled_x = self.scaled_x
         elif DataSet == 'test':
             self.te_scaled_x = self.scaled_x
         return self.scaled_x

@@ -109,9 +109,12 @@ class modeling(object):
         self.cv_pred_y = cross_val_predict(self.estimator,self.tr_scaled_x,y=self.tr_y,n_jobs=-1,cv=self.cv)
         self.cv_evaluator = modelEvaluator(self.tr_y,self.cv_pred_y,model_kind='rgr')
         self.cv_metrics = dict(self.cv_evaluator.__dict__.items())
-    def ShowResults(self):
+    def ShowResults(self,show_cv=True):
         """打印模型所有评价结果(训练集预测结果、测试集预测结果、交互检验预测结果)，并且将训练集与测试集预测结果绘制散点图"""
-        print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics,'cv':self.cv_metrics})))
+        if show_cv:
+            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics,'cv':self.cv_metrics})))
+        else:
+            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics})))
         axisMin = min(self.tr_y.min(),self.te_y.min(),self.tr_pred_y.min(),self.te_pred_y.min())-0.5
         axisMax = max(self.tr_y.max(),self.te_y.max(),self.tr_pred_y.max(),self.te_pred_y.max())+0.5
         plt.plot(self.tr_y,self.tr_pred_y,'xb')

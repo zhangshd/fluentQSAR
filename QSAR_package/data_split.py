@@ -40,8 +40,8 @@ class extractData(object):
         self.te_y = self.norm_df.loc[:,label_name]
         del self.init_df,self.norm_df
         if int_y:
-            self.tr_y = self.tr_y.astype(np.int8)
-            self.te_y = self.te_y.astype(np.int8)
+            self.tr_y = self.tr_y.astype(np.int32)
+            self.te_y = self.te_y.astype(np.int32)
     def ExtractTrainTestFromLabel(self,data_path,trOte_path,label_name='pIC50',int_y=False):
         """从总样本数据文件及训练集测试集标签文件(训练集、测试集分别以"tr"、"te"表示)提取训练集测试集，\
         \033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
@@ -60,8 +60,8 @@ class extractData(object):
         self.tr_y = self.label_all[self.trOte=='tr']
         self.te_y = self.label_all[self.trOte=='te'] 
         if int_y:
-            self.tr_y.astype(np.int8)
-            self.te_y.astype(np.int8)
+            self.tr_y.astype(np.int32)
+            self.te_y.astype(np.int32)
 
 class randomSpliter(extractData):
     """将数据集随机分成训练集和测试集，对于分类任务的数据，采取分层抽样；对于回归任务的数据，label值最大和最小的样本会被分到训练集中
@@ -72,13 +72,14 @@ class randomSpliter(extractData):
        spliter.SplitRegressionData()
        -------------以下为可选步骤-----------------
        spliter.SaveTrainTestLabel(trOte_path)"""
-    def __init__(self,test_size=0.25,random_state=0):
+    def __init__(self,test_size=0.25,validation_size=None,random_state=0):
         """参数：
            -----
            test_size：float型(范围(0,1))，测试集比例
            random_state：int型，控制随机状态
         """
         self.test_size = test_size
+        self.validation_size = validation_size
         self.random_state = random_state
         
     
@@ -91,11 +92,17 @@ class randomSpliter(extractData):
            label_name：string型，label列的列名"""
         
         self.feature_all = self.norm_df.iloc[:,1:]
-        self.label_all = self.norm_df.iloc[:,0].astype(np.int8)
+        self.label_all = self.norm_df.iloc[:,0].astype(np.int32)
         
         self.tr_x,self.te_x = train_test_split(self.feature_all,test_size=self.test_size,
                                                random_state=self.random_state,stratify=self.label_all)
         
+        if type(self.validation_size) == float:
+            self.tr_x,self.val_x = train_test_split(self.tr_x,test_size=self.validation_size,
+                                                    random_state=self.random_state,stratify=self.label_all[self.tr_x.index])
+            self.val_ids = self.val_x.index
+            self.val_y = self.label_all[self.val_ids]
+            
         self.tr_ids = self.tr_x.index
         self.te_ids = self.te_x.index
         
@@ -116,6 +123,11 @@ class randomSpliter(extractData):
         self.x_withoutMaxMin = self.feature_all.drop(index=[self.label_all.idxmax(),self.label_all.idxmin()])
         
         self.tr_x,self.te_x = train_test_split(self.x_withoutMaxMin,test_size=self.test_size,random_state=self.random_state)
+        if type(self.validation_size) == float:
+            self.tr_x,self.val_x = train_test_split(self.tr_x,test_size=self.validation_size,random_state=self.random_state)
+            self.val_ids = self.val_x.index
+            self.val_y = self.label_all[self.val_ids]
+            
         self.tr_x = self.tr_x.append(self.max_min_x)
         
         self.tr_ids = self.tr_x.index
