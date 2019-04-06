@@ -112,9 +112,9 @@ class modeling(object):
     def ShowResults(self,show_cv=True):
         """打印模型所有评价结果(训练集预测结果、测试集预测结果、交互检验预测结果)，并且将训练集与测试集预测结果绘制散点图"""
         if show_cv:
-            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics,'cv':self.cv_metrics})))
+            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics,'cv':self.cv_metrics}).T))
         else:
-            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics})))
+            print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics}).T))
         axisMin = min(self.tr_y.min(),self.te_y.min(),self.tr_pred_y.min(),self.te_pred_y.min())-0.5
         axisMax = max(self.tr_y.max(),self.te_y.max(),self.tr_pred_y.max(),self.te_pred_y.max())+0.5
         plt.plot(self.tr_y,self.tr_pred_y,'xb')
@@ -141,7 +141,7 @@ class modeling(object):
         self.results_df.insert(0,'algorithm',str(self.estimatorName))
         self.results_df.insert(0,'n_features',self.tr_scaled_x.shape[1])
         if notes is not None:
-            self.results_df.insert(-1,'notes',notes)
+            self.results_df.insert(len(self.results_df.columns),'notes',notes)
 
         try:
             with open(res_path) as testfile:
