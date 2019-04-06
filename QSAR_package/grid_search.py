@@ -184,7 +184,7 @@ class gridSearchPlus(gridSearchBase):
            repeat：int型，gridsearch重复次数，参考文献Krstajic D, Journal of Cheminformatics, 2014, 6(1):1-15
            scoreThreshold：float型，第一轮gridsearch后用于筛选参数组合的阈值，将grid_scorer打分低于阈值的参数组合舍去，不进行后面repeat-1轮的gridsearch，从而提高运算效率，对于分越高越好的scorer(如accuracy_score)，阈值设定区间宜为[0,1)，对于分越低越好的scorer(如mean_squared_error)，阈值设定区间宜为[-1,0)，阈值越接近上界筛选力度越大
            stratified：bool型，决定是否采用分层抽取来产生交叉验证数据集
-           random_state：int型，控制随机状态"""
+           random_state：int型，控制学习器的随机状态"""
         self.__grid_estimatorName = grid_estimatorName
         self.fold = fold
         self.repeat = repeat
