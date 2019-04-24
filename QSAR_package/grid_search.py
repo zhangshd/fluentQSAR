@@ -1,6 +1,7 @@
 # coding: utf-8
 
 # Author: Zhang Shengde <zhangshd@foxmail.com>
+#         Qin Zijian <>
 
 from sklearn.model_selection import GridSearchCV,StratifiedKFold,KFold
 from sklearn.metrics import make_scorer,accuracy_score,mean_squared_error
@@ -8,6 +9,7 @@ from sklearn.svm import SVC,SVR
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
 import pandas as pd
+import numpy as np
 from time import time
 import copy
 
@@ -15,7 +17,8 @@ __all__ = ["gridSearchBase","gridSearchPlus"]
 
 class gridSearchBase(object):
     """gridsearch通用版，自定义传入寻优所用学习器、寻优字典、打分器"""
-    def __init__(self,fold=5,grid_estimator=None,grid_dict=None,grid_scorer=None,repeat=10,scoreThreshold=None,stratified=False):
+    def __init__(self,fold=5,grid_estimator=None,grid_dict=None,grid_scorer=None,repeat=10,
+                 early_stop=None,scoreThreshold=None,stratified=False):
         """参数：
            -----
            fold：int型，交叉验证重数
@@ -30,6 +33,7 @@ class gridSearchBase(object):
         self.best_estimator = grid_estimator
         self.grid_dict = grid_dict
         self.repeat = repeat
+        self.early_stop = early_stop
         self.scoreThreshold = scoreThreshold
         self.__Stratify(stratified)
         self.__Scorer(grid_scorer)
@@ -74,31 +78,55 @@ class gridSearchBase(object):
                 self.cv_results = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
                 if self.scoreThreshold == None:
                     self.scoreThreshold = self.cv_results.mean_test_score.median()
+                elif self.scoreThreshold > self.cv_results.mean_test_score.quantile(0.8):
+                # 如果设置的打分阈值太高，可能没有cv_results符合条件，则重新设置阈值为所有打分的0.8分位数
+                    self.scoreThreshold = self.cv_results.mean_test_score.quantile(0.8)
+                    print("\033[41;1mscoreThreshold值太高，重新设定为{}\033[0m".format(self.scoreThreshold))
                 self.cv_results = self.cv_results.loc[self.cv_results.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
-                if len(self.cv_results) == 0:
-                    break
+                
+                # if len(self.cv_results) == 0:
+                    # break
                 self.grid_dict = copy.deepcopy(self.cv_results.params.tolist())
                 # 把grid_dict中的值变成单元素列表
                 for d in self.grid_dict:
                     for key in d.keys(): 
                         d[key] = [d[key]]
+                
+                if self.repeat==1: 
+                    #如果寻优重复次数为1（即不重复），则将该次寻优结果的'mean_test_score'复制一份，便于求其均值
+                    self.cv_results = pd.concat([self.cv_results,self.cv_results.loc[:,'mean_test_score']],axis=1)
+                
             else:
                 self.cv_results = pd.concat([self.cv_results,pd.DataFrame(self.grid.cv_results_).loc[:,'mean_test_score']],axis=1)
                 
             
         # ### 提取每次gridsearch中所有参数组合的测试集打分结果，
         # ### 对于每个参数组合，求取所有轮gridsearch的测试集打分平均值，根据平均值选择最好的参数组合
-        if len(self.cv_results) == 0:
-            print("\033[41;1mscoreThreshold值太高，没有符合要求的参数组合，请重新设定！！！\033[0m")
+        # if len(self.cv_results) == 0:
+            # print("\033[41;1mscoreThreshold值太高，没有符合要求的参数组合，请重新设定！！！\033[0m")
+            
+        # else:
+        self.cv_results["repeat_mean"] = self.cv_results.mean_test_score.mean(axis=1)
+        self.cv_results.sort_values(by="repeat_mean",ascending=False,inplace=True)
+        
+        if type(self.early_stop) == float:
+            top_score = self.cv_results.repeat_mean[0]
+            for k in range(1,len(self.cv_results)):
+                score = self.cv_results.repeat_mean[k]
+                if (top_score-score)/score < self.early_stop:
+                    best_k = k
+                    continue
+                else:
+                    best_k = k-1
+                    break
         else:
-            self.cv_results["mean"] = self.cv_results.mean_test_score.mean(axis=1)
-            self.cv_results.sort_values(by="mean",ascending=False,inplace=True)
-            self.best_params = self.cv_results.iloc[0,0]
-            self.best_features = tr_scaled_x.columns
-            self.best_estimator.set_params(**self.best_params)
-            self.best_estimator.fit(tr_scaled_x, tr_y)
-            print('{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
-                 .format(self.repeat,self.__Sec2Time(time()-t0)))
+            best_k = 0 #如果不设定early_stop，则取打分最高的参数组合
+        self.best_params = self.cv_results.iloc[best_k,0]
+        self.best_features = tr_scaled_x.columns
+        self.best_estimator.set_params(**self.best_params)
+        self.best_estimator.fit(tr_scaled_x, tr_y)
+        print('{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
+             .format(self.repeat,self.__Sec2Time(time()-t0)))
     
     
     
@@ -116,67 +144,94 @@ class gridSearchBase(object):
             self.features_range = features_range
         
         
-        self.featureNum_notNone = self.features_range[0]
-        for i in range(*self.features_range):
-            grid_dict = self.grid_dict
-            
-            for j in range(self.repeat):
-                t1 = time()
-                self.grid = GridSearchCV(self.grid_estimator,grid_dict,scoring=self.grid_scorer,
-                                         cv=self.grid_cv[j],n_jobs=-1,return_train_score=False)
-                self.grid.fit(tr_scaled_x.iloc[:,:i], tr_y)
-                if verbose:
-                    print("{}个特征，第{}/{}次gridsearch，此轮耗时{}".format(i,j+1,self.repeat,self.__Sec2Time(time()-t1)))
-                if j == 0:
-                    temp0 = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
-                    if self.scoreThreshold == None:
-                        self.scoreThreshold = temp0.mean_test_score.median()
-                    temp0 = temp0.loc[temp0.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
-                    if len(temp0) == 0 :
-                        if not hasattr(self,'cv_results'):  # 判断self.cv_results属性是否存在
-                            self.featureNum_notNone += 1
-                        if verbose:
-                            print("\033[31m{}个特征的gridsearch中，没有符合要求的参数组合\033[0m".format(i))
-                        break
-                    grid_dict = copy.deepcopy(temp0.params.tolist())
-                    # 把grid_dict中的值变成单元素列表
-                    for d in grid_dict:
-                        for key in d.keys(): 
-                            d[key] = [d[key]]
-                    
-                else:
-                    temp0 = pd.concat([temp0,pd.DataFrame(self.grid.cv_results_).loc[:,'mean_test_score']],axis=1)
+        
+        def loop():
+            self.featureNum_notNone = self.features_range[0]
+            for i in range(*self.features_range):
+                grid_dict = self.grid_dict
                 
-                    
-            
-            if i == self.featureNum_notNone:
-                temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
-                self.cv_results = temp0
+                for j in range(self.repeat):
+                    t1 = time()
+                    self.grid = GridSearchCV(self.grid_estimator,grid_dict,scoring=self.grid_scorer,
+                                             cv=self.grid_cv[j],n_jobs=-1,return_train_score=False)
+                    self.grid.fit(tr_scaled_x.iloc[:,:i], tr_y)
+                    if verbose:
+                        print("{}个特征，第{}/{}次gridsearch，此轮耗时{}".format(i,j+1,self.repeat,self.__Sec2Time(time()-t1)))
+                    if j == 0:
+                        temp0 = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
+                        if self.scoreThreshold == None:
+                            self.scoreThreshold = temp0.mean_test_score.median()
+                        temp0 = temp0.loc[temp0.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
+                        if len(temp0) == 0:
+                            if not hasattr(self,'cv_results'):  # 判断self.cv_results属性是否存在
+                                self.featureNum_notNone += 1
+                            if verbose:
+                                print("\033[31m{}个特征的gridsearch中，没有符合要求的参数组合\033[0m".format(i))
+                            break
+                        grid_dict = copy.deepcopy(temp0.params.tolist())
+                        # 把grid_dict中的值变成单元素列表
+                        for d in grid_dict:
+                            for key in d.keys(): 
+                                d[key] = [d[key]]
+                        
+                    else:
+                        temp0 = pd.concat([temp0,pd.DataFrame(self.grid.cv_results_).loc[:,'mean_test_score']],axis=1)
                 
-            elif i > self.featureNum_notNone and len(temp0) != 0:
-                temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
-                self.cv_results = self.cv_results.append(temp0,ignore_index=True)
+                if len(temp0) != 0:
+                    if self.repeat == 1:
+                        #如果寻优重复次数为1（即不重复），则将该次寻优结果的'mean_test_score'复制一份
+                        temp0 = pd.concat([temp0,temp0.loc[:,'mean_test_score']],axis=1)
+                        
+                    temp0["repeat_mean"] = temp0.mean_test_score.mean(axis=1)
+                    temp0.sort_values(by="repeat_mean",ascending=False,inplace=True)
+                    if type(self.early_stop) == float:
+                        print('执行early_stop')
+                        top_score = temp0.repeat_mean[0]
+                        for k in range(1,len(temp0)):
+                            score = temp0.repeat_mean[k]
+                            if (top_score-score)/score < self.early_stop:
+                                best_k = k
+                                continue
+                            else:
+                                best_k = k-1
+                                break
+                        temp0 = temp0.iloc[[best_k],:]
+                        
+                    if i == self.featureNum_notNone:
+                        temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
+                        print(len(tr_scaled_x.iloc[:,:i].columns))
+                        self.cv_results = temp0
+                        
+                    elif i > self.featureNum_notNone and len(temp0) != 0:
+                        temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
+                        print(len(tr_scaled_x.iloc[:,:i].columns))
+                        self.cv_results = pd.concat([self.cv_results,temp0],axis=0,ignore_index=True)
+                        
                 
         # ### 提取每次gridsearch中所有参数组合的测试集打分结果，
         # ### 对于每个参数组合，求取所有轮gridsearch的测试集打分平均值，根据平均值选择最好的参数组合
+        loop()
         if not hasattr(self,'cv_results'):
-            print("\033[41;1mscoreThreshold值太高，没有符合要求的参数组合，请重新设定！！！\033[0m")
-        else:
-            self.cv_results["mean"] = self.cv_results.mean_test_score.mean(axis=1)
-            self.cv_results.sort_values(by="mean",ascending=False,inplace=True)
-            self.best_params = self.cv_results.iloc[0,0]
-            self.best_features = tr_scaled_x.iloc[:,:self.cv_results.iloc[0,-2]].columns
-            self.best_estimator.set_params(**self.best_params)
-            self.best_estimator.fit(tr_scaled_x.loc[:,self.best_features], tr_y)
-            print('{}×{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
-            .format(len(range(*self.features_range)),self.repeat,self.__Sec2Time(time()-t0)))
+            self.scoreThreshold = None
+            print("\033[41;1mscoreThreshold值太高，没有符合要求的参数组合，已重置为默认设定并重新执行寻优过程！\033[0m")
+            loop()  # 重新执行寻优过程
+        
+        # self.cv_results["repeat_mean"] = self.cv_results.mean_test_score.mean(axis=1)
+        self.cv_results.sort_values(by="repeat_mean",ascending=False,inplace=True)
+        self.best_params = self.cv_results.iloc[0,0]
+        self.best_features = tr_scaled_x.iloc[:,:self.cv_results.iloc[0,-1]].columns
+        self.best_estimator.set_params(**self.best_params)
+        self.best_estimator.fit(tr_scaled_x.loc[:,self.best_features], tr_y)
+        print('{}×{}次gridsearch执行完毕，总耗时{}，可通过best_params属性查看最优参数，通过cv_results属性查看所有结果'\
+        .format(len(range(*self.features_range)),self.repeat,self.__Sec2Time(time()-t0)))
     def SaveGridCVresults(self,path):
         self.cv_results.to_csv(path,index=False)
             
         
 class gridSearchPlus(gridSearchBase):
     """gridsearch特别版，只适用于SVC、SVR、DTC、RFC、RFR等算法的寻优，无需传入寻优所用学习器、寻优字典、打分器，只需给定支持的算法名"""
-    def __init__(self,grid_estimatorName='SVR',fold=5,repeat=10,scoreThreshold=None,stratified=False,random_state=0):
+    def __init__(self,grid_estimatorName='SVR',fold=5,repeat=10,early_stop=None,
+                 scoreThreshold=None,stratified=False,random_state=0):
         """参数：
            -----
            grid_estimatorName：string型，指定需参数寻优的学习器名字，可选项有'SVC'、'SVR'、'DTC'、'RFC'、'RFR'
@@ -189,6 +244,7 @@ class gridSearchPlus(gridSearchBase):
         self.fold = fold
         self.repeat = repeat
         self.random_state = random_state
+        self.early_stop = early_stop
         self.scoreThreshold = scoreThreshold
         super()._gridSearchBase__Stratify(stratified)
         self.__SelectEstimator()

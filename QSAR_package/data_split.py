@@ -16,7 +16,7 @@ class extractData(object):
         ExtractTrainTestFromLabel()：从总样本数据文件及训练集测试集标签文件提取训练集测试集"""
     def __init__(self):
         pass
-    def ExtractTotalData(self,data_path,label_name='pIC50'):
+    def ExtractTotalData(self,data_path,label_name='Activity'):
         """从总样本数据文件提取总数据，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
         参数：
         -----
@@ -24,14 +24,14 @@ class extractData(object):
         label_name：string型，label列的名字"""
         self.init_df = pd.read_csv(data_path,dtype=np.str)
         self.norm_df = self.init_df.loc[:,label_name:].astype(np.float32)
-    def ExtractTrainTestData(self,train_path,test_path,label_name='pIC50',int_y=False):
+    def ExtractTrainTestData(self,train_path,test_path,label_name='Activity'):
         """从训练集、测试集文件提取训练集测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
         参数：
         -----
         train_path：string型，训练集文件路径
         test_path：string型，测试集文件路径
         label_name：string型，label列的名字
-        int_y：bool型，决定是否要将label列转换为int型(\033[35;1m分类建模必须设置为True\033[0m)，如果不转换则为float型"""
+        """
         self.ExtractTotalData(train_path,label_name)
         self.tr_x = self.norm_df.iloc[:,1:]
         self.tr_y = self.norm_df.loc[:,label_name]
@@ -39,10 +39,10 @@ class extractData(object):
         self.te_x = self.norm_df.iloc[:,1:]
         self.te_y = self.norm_df.loc[:,label_name]
         del self.init_df,self.norm_df
-        if int_y:
+        if len(self.tr_y.unique())<=5: #判断是否为分类数据的标签，如果是的话，把标签列转换为整型
             self.tr_y = self.tr_y.astype(np.int32)
             self.te_y = self.te_y.astype(np.int32)
-    def ExtractTrainTestFromLabel(self,data_path,trOte_path,label_name='pIC50',int_y=False):
+    def ExtractTrainTestFromLabel(self,data_path,trOte_path,label_name='Activity'):
         """从总样本数据文件及训练集测试集标签文件(训练集、测试集分别以"tr"、"te"表示)提取训练集测试集，\
         \033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
         参数：
@@ -50,7 +50,7 @@ class extractData(object):
         data_path：string型，总数据集文件路径
         trOte_path：string型，训练集测试集标签文件路径，文件中训练集、测试集分别以"tr"、"te"表示
         label_name：string型，label列的名字
-        int_y：bool型，决定是否要将label列转换为int型(\033[35;1m分类建模必须设置为True\033[0m)，如果False则默认为float型"""
+        """
         self.trOte = pd.read_csv(trOte_path,squeeze=True)
         self.ExtractTotalData(data_path,label_name)
         self.feature_all = self.norm_df.iloc[:,1:]
@@ -59,7 +59,7 @@ class extractData(object):
         self.te_x = self.feature_all.loc[self.trOte=='te',:]
         self.tr_y = self.label_all[self.trOte=='tr']
         self.te_y = self.label_all[self.trOte=='te'] 
-        if int_y:
+        if len(self.tr_y.unique())<=5:
             self.tr_y.astype(np.int32)
             self.te_y.astype(np.int32)
 
@@ -68,7 +68,7 @@ class randomSpliter(extractData):
        example：
        -------------以下为必要步骤-----------------
        spliter = randomSpliter(test_size=0.25,random_state=0)
-       spliter.ExtractTotalData(data_path)
+       spliter.ExtractTotalData(data_path,label_name='Activity')
        spliter.SplitRegressionData()
        -------------以下为可选步骤-----------------
        spliter.SaveTrainTestLabel(trOte_path)"""
