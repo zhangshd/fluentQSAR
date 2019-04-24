@@ -3,7 +3,7 @@
 # Author: Zhang Shengde <zhangshd@foxmail.com>
 
 from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absolute_error,mean_squared_error
-from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold
+from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold,StratifiedKFold
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -13,16 +13,16 @@ __all__ = ["modelEvaluator","modeling"]
 
 class modelEvaluator(object):
     """计算用于评价二分类模型或回归模型的统计量"""
-    def __init__(self,y_true,y_pred,model_kind='clf'):
+    def __init__(self,y_true,y_pred):
         """参数：
            -----
            y_true：array型(一维)，样本label真实值
            y_pred：array型(一维)，样本label预测值
-           model_kind：string型，模型类型，'clf'(分类)或'rgr'(回归)"""
+           """
         
-        if model_kind == 'clf':
+        if len(np.unique(y_true))<=5: # 根据标签列的多样性确定是分类还是回归
             self.__Clf_metrics(y_true,y_pred)
-        if model_kind == 'rgr':
+        else:
             self.__Rgr_metrics(y_true,y_pred)
             
     def __Clf_metrics(self,y_true,y_pred):
@@ -82,13 +82,10 @@ class modeling(object):
            tr_y：array型(一维)，训练样本的label数据"""
         self.tr_scaled_x = tr_scaled_x
         self.tr_y = np.array(tr_y)
-        if len(np.unique(tr_y))<=5: # 根据标签列的多样性确定是分类还是回归
-            self.model_kind = 'clf'
-        else:
-            self.model_kind = 'rgr'
+        
         self.estimator.fit(self.tr_scaled_x,self.tr_y)
         self.tr_pred_y = self.estimator.predict(self.tr_scaled_x)
-        self.tr_evaluator = modelEvaluator(self.tr_y,self.tr_pred_y,model_kind=self.model_kind)
+        self.tr_evaluator = modelEvaluator(self.tr_y,self.tr_pred_y)
         self.tr_metrics = dict(self.tr_evaluator.__dict__.items())
         print('Training results: \033[1m{}\033[0m'.format(self.tr_metrics))
     def Predict(self,te_scaled_x,te_y=None):
@@ -100,7 +97,7 @@ class modeling(object):
         self.te_pred_y = self.estimator.predict(te_scaled_x)
         if te_y is not None:
             self.te_y = np.array(te_y)
-            self.te_evaluator = modelEvaluator(self.te_y,self.te_pred_y,model_kind=self.model_kind)
+            self.te_evaluator = modelEvaluator(self.te_y,self.te_pred_y)
             self.te_metrics = dict(self.te_evaluator.__dict__.items())
             print('Test results: \033[1m{}\033[0m'.format(self.te_metrics))
     def CrossVal(self,cv):
@@ -109,13 +106,16 @@ class modeling(object):
            -----
            cv：int、string或object型，指定交互检验生成器如Kfold、LeaveOneOut等"""
         if type(cv) == int:
-            self.cv = KFold(n_splits=cv, shuffle=True,random_state=0)
+            if len(np.unique(self.tr_y))<=5:  # 判断是否为分类数据，如果是，则交叉验证采用分层抽样
+                self.cv = StratifiedKFold(n_splits=cv, shuffle=True,random_state=0)
+            else:
+                self.cv = KFold(n_splits=cv, shuffle=True,random_state=0)
         elif cv == 'LOO':
             self.cv = LeaveOneOut()
         else:
             self.cv = cv
         self.cv_pred_y = cross_val_predict(self.estimator,self.tr_scaled_x,y=self.tr_y,n_jobs=-1,cv=self.cv)
-        self.cv_evaluator = modelEvaluator(self.tr_y,self.cv_pred_y,model_kind=self.model_kind)
+        self.cv_evaluator = modelEvaluator(self.tr_y,self.cv_pred_y)
         self.cv_metrics = dict(self.cv_evaluator.__dict__.items())
     def ShowResults(self,show_cv=True,make_fig=False):
         """打印模型所有评价结果(训练集预测结果、测试集预测结果、交互检验预测结果)，并且将训练集与测试集预测结果绘制散点图
@@ -142,18 +142,27 @@ class modeling(object):
             self.plt = plt
             return plt
       
-    def SaveResults(self,res_path,notes=None):
-        """将模型结果保存至CSV文件中，如果在ShowResults中设置了做散点图，则散点图也会保存
+    def SaveResults(self,res_path,notes=None,save_model=True):
+        """将模型结果保存至CSV文件中，如果在ShowResults中设置了做散点图，则散点图也会被保存
         参数：
         -----
         res_path：string型，结果文件的路径，如果是已存在的文件则追加行
-        notes：string型，可以添加结果备注信息"""
+        notes：string型，可以添加结果备注信息
+        save_model：bool型，判断是否保存模型文件"""
         metrics = []
-        for s in ['tr_','cv_','te_']:
-            metrics_ = copy.deepcopy(eval('self.{}metrics'.format(s)))
-            for k in copy.deepcopy(list(metrics_.keys())):
-                metrics_[s+k]=metrics_.pop(k)
-            metrics.append(metrics_)
+        try:
+            for s in ['tr_','cv_','te_']:
+                metrics_ = copy.deepcopy(eval('self.{}metrics'.format(s)))
+                for k in copy.deepcopy(list(metrics_.keys())):
+                    metrics_[s+k]=metrics_.pop(k)
+                metrics.append(metrics_)
+        except:
+            for s in ['tr_','te_']:
+                metrics_ = copy.deepcopy(eval('self.{}metrics'.format(s)))
+                for k in copy.deepcopy(list(metrics_.keys())):
+                    metrics_[s+k]=metrics_.pop(k)
+                metrics.append(metrics_)
+                
         all_metrics = dict(metrics[0],**metrics[1],**metrics[2])
         self.results_df = pd.DataFrame(all_metrics,index=[0])
         self.estimatorName = str(self.estimator)[:str(self.estimator).find("(")]
@@ -175,7 +184,10 @@ class modeling(object):
                              dpi=300,bbox_inches='tight')
         except:
             pass
-
+        
+        if save_model:
+            from sklearn.externals import joblib
+            joblib.dump(self.estimator,res_path[:-4]+'_{}_{}.model'.format(self.estimatorName,self.tr_scaled_x.shape[1]))
 
 if __name__ == '__main__':
     pass

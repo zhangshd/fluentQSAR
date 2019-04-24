@@ -57,7 +57,7 @@ class DuplicateFor2Sets(object):
                 print('The {}th smi is a duplicate (with id starts from 0).'.format(i))
         self.df2_out = self.df2.drop(index=self.duplicates_id)
         if save_csv:
-            path_out = self.path2[:-4]+'_duplicated.csv'
+            path_out = self.path2[:-4]+'_duplicated_{}.csv'.format(len(self.df2_out))
             self.df2_out.to_csv(path_out,index=False)
             print('The duplicated result has saved in "{}".'.format(path_out))
 

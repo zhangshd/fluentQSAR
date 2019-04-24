@@ -1,7 +1,8 @@
 # coding: utf-8
 
 # Author: Zhang Shengde <zhangshd@foxmail.com>
-#         Qin Zijian <>
+#         Qin Zijian <zijianqin@foxmail.com>
+#         Tu GuiPing <>
 
 from sklearn.model_selection import GridSearchCV,StratifiedKFold,KFold
 from sklearn.metrics import make_scorer,accuracy_score,mean_squared_error
@@ -69,7 +70,7 @@ class gridSearchBase(object):
         t0 = time()
         for i in range(len(self.grid_cv)):
             t1 = time()
-            self.grid = GridSearchCV(self.grid_estimator,self.grid_dict,scoring=self.grid_scorer,
+            self.grid = GridSearchCV(self.grid_estimator,self.grid_dict,scoring=self.grid_scorer,iid=True,
                                      cv=self.grid_cv[i],n_jobs=-1,return_train_score=False)
             self.grid.fit(tr_scaled_x, tr_y)
             if verbose:
@@ -81,7 +82,7 @@ class gridSearchBase(object):
                 elif self.scoreThreshold > self.cv_results.mean_test_score.quantile(0.8):
                 # 如果设置的打分阈值太高，可能没有cv_results符合条件，则重新设置阈值为所有打分的0.8分位数
                     self.scoreThreshold = self.cv_results.mean_test_score.quantile(0.8)
-                    print("\033[41;1mscoreThreshold值太高，重新设定为{}\033[0m".format(self.scoreThreshold))
+                    print("\033[41;1mscoreThreshold值太高，重新设定为所有打分的0.8分位数{}\033[0m".format(self.scoreThreshold))
                 self.cv_results = self.cv_results.loc[self.cv_results.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
                 
                 # if len(self.cv_results) == 0:
@@ -110,6 +111,7 @@ class gridSearchBase(object):
         self.cv_results.sort_values(by="repeat_mean",ascending=False,inplace=True)
         
         if type(self.early_stop) == float:
+            print('\033[45m执行early_stop\033[0m')
             top_score = self.cv_results.repeat_mean[0]
             for k in range(1,len(self.cv_results)):
                 score = self.cv_results.repeat_mean[k]
@@ -185,7 +187,7 @@ class gridSearchBase(object):
                     temp0["repeat_mean"] = temp0.mean_test_score.mean(axis=1)
                     temp0.sort_values(by="repeat_mean",ascending=False,inplace=True)
                     if type(self.early_stop) == float:
-                        print('执行early_stop')
+                        print('\033[45m执行early_stop\033[0m')
                         top_score = temp0.repeat_mean[0]
                         for k in range(1,len(temp0)):
                             score = temp0.repeat_mean[k]
@@ -202,7 +204,7 @@ class gridSearchBase(object):
                         print(len(tr_scaled_x.iloc[:,:i].columns))
                         self.cv_results = temp0
                         
-                    elif i > self.featureNum_notNone and len(temp0) != 0:
+                    elif i > self.featureNum_notNone:
                         temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
                         print(len(tr_scaled_x.iloc[:,:i].columns))
                         self.cv_results = pd.concat([self.cv_results,temp0],axis=0,ignore_index=True)

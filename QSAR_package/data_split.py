@@ -24,6 +24,7 @@ class extractData(object):
         label_name：string型，label列的名字"""
         self.init_df = pd.read_csv(data_path,dtype=np.str)
         self.norm_df = self.init_df.loc[:,label_name:].astype(np.float32)
+        
     def ExtractTrainTestData(self,train_path,test_path,label_name='Activity'):
         """从训练集、测试集文件提取训练集测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
         参数：
@@ -82,6 +83,11 @@ class randomSpliter(extractData):
         self.validation_size = validation_size
         self.random_state = random_state
         
+    def SplitData(self):
+        if len(self.norm_df.iloc[:,0].unique()) <= 5:
+            self.SplitClassificationData()
+        else:
+            self.SplitRegressionData()
     
     def SplitClassificationData(self):
         """把用于分类建模的数据集分为训练集和测试集，\033[35;1m！！注意：\033[30mlabel列必须放于第一个feature列的前一列\033[0m
