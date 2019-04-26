@@ -5,7 +5,7 @@
 #         Tu GuiPing <>
 
 from sklearn.model_selection import GridSearchCV,StratifiedKFold,KFold
-from sklearn.metrics import make_scorer,accuracy_score,mean_squared_error
+from sklearn.metrics import make_scorer,accuracy_score,mean_squared_error,matthews_corrcoef
 from sklearn.svm import SVC,SVR
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
@@ -28,7 +28,11 @@ class gridSearchBase(object):
            grid_scorer：string或object型，寻优所用打分器，可通过string选择的仅有'accuracy'和'mse'
            repeat：int型，gridsearch重复次数，参考文献Krstajic D, Journal of Cheminformatics, 2014, 6(1):1-15
            scoreThreshold：float型，第一轮gridsearch后用于筛选参数组合的阈值，将grid_scorer打分低于阈值的参数组合舍去，不进行后面repeat-1轮的gridsearch，从而提高运算效率，对于分越高越好的scorer(如accuracy_score)，阈值设定区间宜为[0,1)，对于分越低越好的scorer(如mean_squared_error)，阈值设定区间宜为[-1,0)，阈值越接近上界筛选力度越大
-           stratified：bool型，决定是否采用分层抽取来产生交叉验证数据集"""
+           stratified：bool型，决定是否采用分层抽取来产生交叉验证数据集
+           early_stop：float型或其他数据类型，正常情况gridsearch所选的最优参数组合是交叉验证平均得分（mean_test_score）最高的参数组合，\
+           如果设置这个参数为float型数字（大于0小于1），则会从最高分开始向下寻找（分值按降序排列）得分与最高分有显著差异的次优参数组合，\
+           显著差异的标准就是该分值与最高分的差值占该分值的比率（取绝对值）大于指定的early_stop数值，最终选择的参数组合是降序排名在上述\
+           次优参数组合前一名的参数组合"""
         self.fold = fold
         self.grid_estimator = grid_estimator
         self.best_estimator = grid_estimator
@@ -41,7 +45,7 @@ class gridSearchBase(object):
     
     def __Scorer(self,grid_scorer):
         if grid_scorer == 'accuracy':
-            self.grid_scorer = make_scorer(accuracy_score,greater_is_better=True)
+            self.grid_scorer = make_scorer(matthews_corrcoef,greater_is_better=True)
             
         elif grid_scorer == 'mse':
             self.grid_scorer = make_scorer(mean_squared_error,greater_is_better=False)
@@ -68,10 +72,14 @@ class gridSearchBase(object):
            tr_scaled_x：array型，训练样本的feature数据
            tr_y：array型(一维)，训练样本的label数据"""
         t0 = time()
+        if len(np.unique(tr_y)) <= 5:
+            self.__Stratify(stratified=True)
         for i in range(len(self.grid_cv)):
             t1 = time()
-            self.grid = GridSearchCV(self.grid_estimator,self.grid_dict,scoring=self.grid_scorer,iid=True,
+            # print(self.grid_dict)
+            self.grid = GridSearchCV(self.grid_estimator,self.grid_dict,scoring=self.grid_scorer,iid=False,
                                      cv=self.grid_cv[i],n_jobs=-1,return_train_score=False)
+            print('训练集数据shape:{}'.format(tr_scaled_x.shape))
             self.grid.fit(tr_scaled_x, tr_y)
             if verbose:
                 print("第{}/{}次gridsearch，此轮耗时{}".format(i+1,self.repeat,self.__Sec2Time(time()-t1)))
@@ -79,11 +87,13 @@ class gridSearchBase(object):
                 self.cv_results = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
                 if self.scoreThreshold == None:
                     self.scoreThreshold = self.cv_results.mean_test_score.median()
+                    # print(self.scoreThreshold)
                 elif self.scoreThreshold > self.cv_results.mean_test_score.quantile(0.8):
                 # 如果设置的打分阈值太高，可能没有cv_results符合条件，则重新设置阈值为所有打分的0.8分位数
                     self.scoreThreshold = self.cv_results.mean_test_score.quantile(0.8)
                     print("\033[41;1mscoreThreshold值太高，重新设定为所有打分的0.8分位数{}\033[0m".format(self.scoreThreshold))
-                self.cv_results = self.cv_results.loc[self.cv_results.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
+                self.cv_results = self.cv_results.loc[self.cv_results.mean_test_score >= self.scoreThreshold,:].reset_index(drop=True)
+                
                 
                 # if len(self.cv_results) == 0:
                     # break
@@ -115,7 +125,7 @@ class gridSearchBase(object):
             top_score = self.cv_results.repeat_mean[0]
             for k in range(1,len(self.cv_results)):
                 score = self.cv_results.repeat_mean[k]
-                if (top_score-score)/score < self.early_stop:
+                if abs((top_score-score)/score) < self.early_stop:
                     best_k = k
                     continue
                 else:
@@ -140,13 +150,13 @@ class gridSearchBase(object):
            tr_y：array型(一维)，训练样本的label数据
            features_range：(start, stop[, step])，描述符数量迭代范围"""
         t0 = time()
+        if len(np.unique(tr_y)) <= 5:
+            self.__Stratify(stratified=True)
         if features_range == None:
             self.features_range = (1,len(tr_scaled_x.columns),1)
         else:
             self.features_range = features_range
-        
-        
-        
+    
         def loop():
             self.featureNum_notNone = self.features_range[0]
             for i in range(*self.features_range):
@@ -154,16 +164,19 @@ class gridSearchBase(object):
                 
                 for j in range(self.repeat):
                     t1 = time()
-                    self.grid = GridSearchCV(self.grid_estimator,grid_dict,scoring=self.grid_scorer,
+                    self.grid = GridSearchCV(self.grid_estimator,grid_dict,scoring=self.grid_scorer,iid=False,
                                              cv=self.grid_cv[j],n_jobs=-1,return_train_score=False)
                     self.grid.fit(tr_scaled_x.iloc[:,:i], tr_y)
                     if verbose:
                         print("{}个特征，第{}/{}次gridsearch，此轮耗时{}".format(i,j+1,self.repeat,self.__Sec2Time(time()-t1)))
                     if j == 0:
                         temp0 = pd.DataFrame(self.grid.cv_results_).loc[:,['params','mean_test_score']]
+                        # print(temp0)
                         if self.scoreThreshold == None:
                             self.scoreThreshold = temp0.mean_test_score.median()
-                        temp0 = temp0.loc[temp0.mean_test_score > self.scoreThreshold,:].reset_index(drop=True)
+                            # print(self.scoreThreshold)
+                        temp0 = temp0.loc[temp0.mean_test_score >= self.scoreThreshold,:].reset_index(drop=True)
+                        # print(len(temp0))
                         if len(temp0) == 0:
                             if not hasattr(self,'cv_results'):  # 判断self.cv_results属性是否存在
                                 self.featureNum_notNone += 1
@@ -178,6 +191,7 @@ class gridSearchBase(object):
                         
                     else:
                         temp0 = pd.concat([temp0,pd.DataFrame(self.grid.cv_results_).loc[:,'mean_test_score']],axis=1)
+                        # print(len(temp0))
                 
                 if len(temp0) != 0:
                     if self.repeat == 1:
@@ -186,12 +200,13 @@ class gridSearchBase(object):
                         
                     temp0["repeat_mean"] = temp0.mean_test_score.mean(axis=1)
                     temp0.sort_values(by="repeat_mean",ascending=False,inplace=True)
+                    # print(len(temp0))
                     if type(self.early_stop) == float:
                         print('\033[45m执行early_stop\033[0m')
                         top_score = temp0.repeat_mean[0]
-                        for k in range(1,len(temp0)):
+                        for k in range(len(temp0)):
                             score = temp0.repeat_mean[k]
-                            if (top_score-score)/score < self.early_stop:
+                            if abs((top_score-score)/score) < self.early_stop:
                                 best_k = k
                                 continue
                             else:
@@ -201,12 +216,12 @@ class gridSearchBase(object):
                         
                     if i == self.featureNum_notNone:
                         temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
-                        print(len(tr_scaled_x.iloc[:,:i].columns))
+                        # print(len(tr_scaled_x.iloc[:,:i].columns))
                         self.cv_results = temp0
                         
                     elif i > self.featureNum_notNone:
                         temp0['n_features'] = len(tr_scaled_x.iloc[:,:i].columns)
-                        print(len(tr_scaled_x.iloc[:,:i].columns))
+                        # print(len(tr_scaled_x.iloc[:,:i].columns))
                         self.cv_results = pd.concat([self.cv_results,temp0],axis=0,ignore_index=True)
                         
                 
@@ -241,7 +256,11 @@ class gridSearchPlus(gridSearchBase):
            repeat：int型，gridsearch重复次数，参考文献Krstajic D, Journal of Cheminformatics, 2014, 6(1):1-15
            scoreThreshold：float型，第一轮gridsearch后用于筛选参数组合的阈值，将grid_scorer打分低于阈值的参数组合舍去，不进行后面repeat-1轮的gridsearch，从而提高运算效率，对于分越高越好的scorer(如accuracy_score)，阈值设定区间宜为[0,1)，对于分越低越好的scorer(如mean_squared_error)，阈值设定区间宜为[-1,0)，阈值越接近上界筛选力度越大
            stratified：bool型，决定是否采用分层抽取来产生交叉验证数据集
-           random_state：int型，控制学习器的随机状态"""
+           random_state：int型，控制学习器（如随机森林）的随机状态
+           early_stop：float型或其他数据类型，正常情况gridsearch所选的最优参数组合是交叉验证平均得分（mean_test_score）最高的参数组合，\
+           如果设置这个参数为float型数字（大于0小于1），则会从最高分开始向下寻找（分值按降序排列）得分与最高分有显著差异的次优参数组合，\
+           显著差异的标准就是该分值与最高分的差值占该分值的比率（取绝对值）大于指定的early_stop数值，最终选择的参数组合是降序排名在上述\
+           次优参数组合前一名的参数组合"""
         self.__grid_estimatorName = grid_estimatorName
         self.fold = fold
         self.repeat = repeat
@@ -255,7 +274,7 @@ class gridSearchPlus(gridSearchBase):
     def __SelectEstimator(self):
         """根据输入grid_estimatorName选择使用的算法及其对应的寻优参数字典"""
         if self.__grid_estimatorName[-1] == 'C':
-            self.grid_scorer = make_scorer(accuracy_score,greater_is_better=True)   # 分类任务选择准确率打分器
+            self.grid_scorer = make_scorer(matthews_corrcoef,greater_is_better=True)   # 分类任务选择准确率打分器
             
             if self.__grid_estimatorName == 'SVC':
                 self.grid_dict = {'C':[2**i for i in range(-10,11)],

@@ -4,10 +4,13 @@
 
 from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absolute_error,mean_squared_error
 from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold,StratifiedKFold
+import matplotlib
+matplotlib.use('AGG')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import copy
+import time
 
 __all__ = ["modelEvaluator","modeling"]
 
@@ -129,18 +132,17 @@ class modeling(object):
             print('\033[1m{}\033[0m'.format(pd.DataFrame({'tr':self.tr_metrics,'te':self.te_metrics}).T))
         
         if make_fig:
-            fig = plt.figure(figsize=(6,6))
+            fig,ax = plt.subplots(facecolor="w",figsize=(5,5))
             axisMin = min(self.tr_y.min(),self.te_y.min(),self.tr_pred_y.min(),self.te_pred_y.min())-0.5
             axisMax = max(self.tr_y.max(),self.te_y.max(),self.tr_pred_y.max(),self.te_pred_y.max())+0.5
-            plt.plot(self.tr_y,self.tr_pred_y,'xb',markersize=8)
-            plt.plot(self.te_y,self.te_pred_y,'or',mfc='w',markersize=6)
-            plt.plot([axisMin,axisMax],[axisMin,axisMax],'k',lw=1)
-            plt.axis([axisMin,axisMax,axisMin,axisMax])
-            plt.xlabel('pIC50 values (true)',fontproperties='Times New Roman',fontsize=13)
-            plt.ylabel('pIC50 values (predicted)',fontproperties='Times New Roman',fontsize=13)
-            plt.legend(['training set', 'test set'], loc='best')
-            self.plt = plt
-            return plt
+            ax.plot(self.tr_y,self.tr_pred_y,'xb',markersize=8)
+            ax.plot(self.te_y,self.te_pred_y,'or',mfc='w',markersize=6)
+            ax.plot([axisMin,axisMax],[axisMin,axisMax],'k',lw=1)
+            ax.axis([axisMin,axisMax,axisMin,axisMax])
+            ax.set_xlabel(r'pIC$_{50}$ values (true)',fontsize=13)
+            ax.set_ylabel(r'pIC$_{50}$ values (predicted)',fontsize=13)
+            ax.legend(['training set', 'test set'], loc='best')
+            self.plt = fig
       
     def SaveResults(self,res_path,notes=None,save_model=True):
         """将模型结果保存至CSV文件中，如果在ShowResults中设置了做散点图，则散点图也会被保存
@@ -187,7 +189,9 @@ class modeling(object):
         
         if save_model:
             from sklearn.externals import joblib
-            joblib.dump(self.estimator,res_path[:-4]+'_{}_{}.model'.format(self.estimatorName,self.tr_scaled_x.shape[1]))
-
+            t=time.localtime()
+            tm_str = "{:02d}{:02d}{:02d}{:02d}".format(t.tm_mon, t.tm_mday, t.tm_hour,t.tm_sec) 
+            joblib.dump(self.estimator,res_path[:-4]+'_{}_{}_{}.model'.format(self.estimatorName,self.tr_scaled_x.shape[1],tm_str))
+        print("模型的结果已保存至\033[1m{}\033[0m".format(res_path))
 if __name__ == '__main__':
     pass
