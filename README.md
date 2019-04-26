@@ -26,7 +26,8 @@ sys.path
 
 以上操作的目的是把自己的脚本库路径加入到Python的环境变量中
 
-## 2. 提取数据/随机划分训练集测试集（三种方式），```在存放描述符数据的文件中，一定要把标签列放于第一个特征（描述符）列的前一列```
+## 2. 提取数据/随机划分训练集测试集 -- 必选步骤，三种方式三选一
+```在存放描述符数据的文件中，一定要把标签列放于第一个特征（描述符）列的前一列```
 ### 2.1 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集
 ```python
 from QSAR_package.data_split import randomSpliter
@@ -79,7 +80,7 @@ te_y = spliter.te_y
 ```
 
 ## 3. Pearson相关性筛选/RFE排序/数据压缩
-### 3.1 Pearson相关性筛选（按训练集数据筛选）
+### 3.1 Pearson相关性筛选（按训练集数据筛选）--可选步骤
 ```python
 from QSAR_package.feature_preprocess import correlationSelection
 ```
@@ -89,7 +90,11 @@ corr = correlationSelection()
 corr.PearsonXX(tr_x, tr_y,threshold_low=0.1, threshold_up=0.9)
 ```
 
-筛选结果的描述符顺序已经按照其跟活性的Pearson相关性从高到低排好序，筛选之后的数据可通过```corr.selected_tr_x```获取，该属性是筛选之后的DataFrame对象，然后将此结果输入数据压缩环节，代码如下：
+筛选结果的描述符顺序已经按照其跟活性的Pearson相关性从高到低排好序，筛选之后的数据可通过```corr.selected_tr_x```获取，该属性是筛选之后的DataFrame对象，然后将此结果输入数据压缩环节。
+
+### 3.2 数据压缩--必要步骤
+
+数据压缩模块`dataScale`可以将所有描述符数据压缩至指定的区间范围（如0.1到0.9），此处直接使用上一步骤Pearson相关性筛选产生的训练集数据`corr.selected_tr_x`拟合压缩器，然后对测试集数据进行压缩，此模块能自动识别连续型的描述符数据和指纹描述符数据，如果输入的是指纹描述符数据，则压缩之后数据不会有变化，所以，为了减少代码的改动，保证变量的统一，可以让指纹描述符也经过数据压缩过程，其数值不会发生变化。
 
 ```python
 from QSAR_package.data_scale import dataScale
@@ -99,6 +104,8 @@ from QSAR_package.data_scale import dataScale
 tr_scaled_x = scaler.FitTransform(corr.selected_tr_x)
 te_scaled_x = scaler.Transform(te_x,DataSet='test')  
 ```
+
+### 3.3 RFE（递归消除法）排序--可选步骤
 经过压缩之后，数据就可以直接输入参数寻优环节了，如果还需要将描述符的顺序换为RFE（递归消除法）排序的顺序，则运行以下代码：
 
 ```python
@@ -111,5 +118,5 @@ rfe.Fit(tr_scaled_x, tr_y)
 tr_ranked_x = rfe.tr_ranked_x
 te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
 ```
-目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器，前提是该学习器有```coef_```或```feature_importance_```属性，详见sklearn文档中RFE算法的介绍https://scikit-learn.org/stable/modules/feature_selection.html#rfe
+目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器，前提是该学习器有```coef_```或```feature_importance_```属性，详见[sklearn文档中RFE算法的介绍](https://scikit-learn.org/stable/modules/feature_selection.html#rfe)
 
