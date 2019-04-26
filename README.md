@@ -133,10 +133,9 @@ from sklearn.metrics import accuracy_score,make_scorer
 ```
 
 ```python
-grid_estimator = SVC()
-grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}
-grid_scorer = make_scorer(accuracy_score,greater_is_better=True)
-grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, 
-                      repeat=10, early_stop=None, scoreThreshold=None, stratified=False)
+grid_estimator = SVC() # 学习器对象
+grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}  # 对应学习器的参数字典
+grid_scorer = make_scorer(accuracy_score,greater_is_better=True)  # 打分器对象
+grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10)
 
 ```
