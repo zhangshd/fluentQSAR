@@ -173,7 +173,8 @@
 grid_estimator = SVC() # 学习器对象
 grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}  # 对应学习器的参数字典
 grid_scorer = make_scorer(accuracy_score,greater_is_better=True)  # 打分器对象
-grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10, early_stop=0.01)
+grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, 
+                      grid_scorer=grid_scorer, repeat=10, early_stop=0.01)
 ...
 ```
 或者
