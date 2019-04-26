@@ -157,7 +157,8 @@
     grid_estimator = SVC() # 学习器对象
     grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}  # 对应学习器的参数字典
     grid_scorer = make_scorer(accuracy_score,greater_is_better=True)  # 打分器对象
-    grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10)
+    grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, 
+                          grid_scorer=grid_scorer, repeat=10)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))  # features_range为描述符数量的迭代范围，参数为元组或列表形式
     ```
     然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
