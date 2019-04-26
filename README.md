@@ -19,7 +19,7 @@ sys.path
 ![](https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_11-08-25.png)
 以上操作的目的是把自己的脚本库路径加入到Python的环境变量中
 ## 2. 提取数据/随机划分训练集测试集（三种方式），```在存放描述符数据的文件中，一定要把标签列放于第一个特征（描述符）列的前一列```
-### 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集
+### 2.1 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集
 ```python
 from QSAR_package.data_split import randomSpliter
 ```
@@ -38,7 +38,11 @@ te_y = spliter.te_y
 ```python
 spliter.saveTrainTestLabel('C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte42.csv')
 ```
-### 根据训练集和测试集标签文件提取训练集和测试集
+### 2.2 根据训练集和测试集标签文件提取训练集和测试集
+```python
+from QSAR_package.data_split import extractData
+```
+
 ```python
 data_path = 'C:/OneDrive/Jupyter_notebook/regression_new/data/spla2_296_rdkit2d.csv'  # 描述符数据文件路径
 trOte_path = 'C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte0.csv'  # 训练集和测试集标签文件路径
@@ -49,7 +53,12 @@ tr_y = spliter.tr_y
 te_x = spliter.te_x
 te_y = spliter.te_y
 ```
-### 如果已经提前分好训练集测试集，且训练集和测试集文件存放于两个文件中，则使用以下代码
+### 2.3 如果已经提前分好训练集测试集，且训练集和测试集文件存放于两个文件中，则使用以下代码
+
+```python
+from QSAR_package.data_split import extractData
+```
+
 ```python
 train_path = 'C:/OneDrive/Jupyter_notebook/Deep_learning/spla2_som_train_312_maccs.csv'  # 训练集数据文件路径
 test_path = 'C:/OneDrive/Jupyter_notebook/Deep_learning/spla2_som_test_140_maccs.csv'  # 测试集数据文件路径
