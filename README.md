@@ -1,4 +1,5 @@
 # QSAR_package使用说明
+$\to$
 ## 1. 使用前准备：
 下载所有脚本，把把所有文件解压后存放至一个目录，如```$/myPackage/```
 
@@ -120,5 +121,22 @@ rfe.Fit(tr_scaled_x, tr_y)
 tr_ranked_x = rfe.tr_ranked_x
 te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
 ```
-目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器，前提是该学习器有```coef_```或```feature_importance_```属性，详见[sklearn文档中RFE算法的介绍](https://scikit-learn.org/stable/modules/feature_selection.html#rfe)
+目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器对象，前提是该学习器对象有```coef_```或```feature_importance_```属性，详见[sklearn文档中RFE算法的介绍](https://scikit-learn.org/stable/modules/feature_selection.html#rfe"")
 
+## 4. 参数寻优
+### 不带描述符数量的重复网格寻优
+- 使用`gridSearchBase`模块可以自定义传入学习器、参数字典、打分器对象，进行重复网格寻优，此处以`SVC`算法的寻优为例
+```python
+from QSAR_package.grid_search import gridSearchBase
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score,make_scorer
+```
+
+```python
+grid_estimator = SVC()
+grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}
+grid_scorer = make_scorer(accuracy_score,greater_is_better=True)
+grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, 
+                      repeat=10, early_stop=None, scoreThreshold=None, stratified=False)
+
+```
