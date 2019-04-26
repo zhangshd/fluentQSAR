@@ -11,11 +11,52 @@ import sys
 ```  
 ```python
 sys.path
-```
-  
+```  
 找到一个类似```..\\lib\\site-packages```的路径  
 ![](https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_10-51-27.png)
 ![](https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_11-03-33.png)
 然后进入这个文件夹，把刚才创建的```myPackage.pth```文件放入这个路径，
 ![](https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_11-08-25.png)
 以上操作的目的是把自己的脚本库路径加入到Python的环境变量中
+## 2. 提取数据/随机划分训练集测试集（三种方式），```在存放描述符数据的文件中，一定要把标签列放于第一个特征（描述符）列的前一列```
+### 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集
+```python
+from QSAR_package.data_split import randomSpliter
+```
+
+```python
+file_name = "C:/OneDrive/Jupyter_notebook/regression_new/data/spla2_296_rdkit2d.csv"  # 描述符数据文件路径
+spliter = randomSpliter(test_size=0.25,random_state=42)
+spliter.ExtractTotalData(file_name,label_name='Activity') #注意指定标签（活性）列的列名
+spliter.SplitData()
+tr_x = spliter.tr_x
+tr_y = spliter.tr_y
+te_x = spliter.te_x
+te_y = spliter.te_y
+```
+如果想保存训练集测试集标签，则加入以下代码：
+```python
+spliter.saveTrainTestLabel('C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte42.csv')
+```
+### 根据训练集和测试集标签文件提取训练集和测试集
+```python
+data_path = 'C:/OneDrive/Jupyter_notebook/regression_new/data/spla2_296_rdkit2d.csv'  # 描述符数据文件路径
+trOte_path = 'C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte0.csv'  # 训练集和测试集标签文件路径
+spliter = extractData()
+spliter.ExtractTrainTestFromLabel(data_path, trOte_path, label_name='Activity') #注意指定标签（活性）列的列名
+tr_x = spliter.tr_x
+tr_y = spliter.tr_y
+te_x = spliter.te_x
+te_y = spliter.te_y
+```
+### 如果已经提前分好训练集测试集，且训练集和测试集文件存放于两个文件中，则使用以下代码
+```python
+train_path = 'C:/OneDrive/Jupyter_notebook/Deep_learning/spla2_som_train_312_maccs.csv'  # 训练集数据文件路径
+test_path = 'C:/OneDrive/Jupyter_notebook/Deep_learning/spla2_som_test_140_maccs.csv'  # 测试集数据文件路径
+spliter = extractData()
+spliter.ExtractTrainTestData(train_path, test_path, label_name='Activity') #注意指定标签（活性）列的列名
+tr_x = spliter.tr_x 
+tr_y = spliter.tr_y
+te_x = spliter.te_x
+te_y = spliter.te_y
+```
