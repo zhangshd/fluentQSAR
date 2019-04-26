@@ -77,3 +77,39 @@ tr_y = spliter.tr_y
 te_x = spliter.te_x
 te_y = spliter.te_y
 ```
+
+## 3. Pearson相关性筛选/RFE排序/数据压缩
+### 3.1 Pearson相关性筛选（按训练集数据筛选）
+```python
+from QSAR_package.feature_preprocess import correlationSelection
+```
+
+```python
+corr = correlationSelection()
+corr.PearsonXX(tr_x, tr_y,threshold_low=0.1, threshold_up=0.9)
+```
+
+筛选结果的描述符顺序已经按照其跟活性的Pearson相关性从高到低排好序，筛选之后的数据可通过```corr.selected_tr_x```获取，该属性是筛选之后的DataFrame对象，然后将此结果输入数据压缩环节，代码如下：
+
+```python
+from QSAR_package.data_scale import dataScale
+```
+
+```python
+tr_scaled_x = scaler.FitTransform(corr.selected_tr_x)
+te_scaled_x = scaler.Transform(te_x,DataSet='test')  
+```
+经过压缩之后，数据就可以直接输入参数寻优环节了，如果还需要将描述符的顺序换为RFE（递归消除法）排序的顺序，则运行以下代码：
+
+```python
+from QSAR_package.feature_preprocess import RFE_ranking
+```
+
+```python
+rfe = RFE_ranking(estimator='SVR',features_num=1)   # "SVR" 为用于实现RFE排序的学习器（分类或回归算法）
+rfe.Fit(tr_scaled_x, tr_y)
+tr_ranked_x = rfe.tr_ranked_x
+te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
+```
+目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器，前提是该学习器有```coef_```或```feature_importance_```属性，详见sklearn文档中RFE算法的介绍https://scikit-learn.org/stable/modules/feature_selection.html#rfe
+
