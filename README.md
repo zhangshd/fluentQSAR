@@ -195,7 +195,38 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
         model = modeling(estimator=grid.best_estimator,params=grid.best_params)
         model.Fit(tr_scaled_x.loc[:,grid.best_features], tr_y)
         model.Predict(te_scaled_x.loc[:,grid.best_features],te_y)
-        model.CrossVal(cv="LOO")
+        model.CrossVal(cv="LOO") # cv可以为'LOO'或正整数，也可以为一个交叉验证生成器对象如`Kfold`、`LeaveOneOut`等
         model.ShowResults(show_cv=True, make_fig=False)
         model.SaveResults('./results.csv',notes='自己定义的一些备注信息')
         ```
+    -   `modeling`模块也可以传入外部定义好的学习器对象和对应的超参数字典，以`SVC`为例：
+        ```python
+        from QSAR_package.model_evaluation import modeling
+        from sklearn.svm import SVC
+        ```
+        ```python
+        estimator = SVC()
+        params = {"C":1, "gamma":0.1} 
+        model = modeling(estimator=estimator,params=params)
+        model.Fit(tr_scaled_x, tr_y)
+        model.Predict(te_scaled_x,te_y)
+        model.CrossVal(cv=5) # cv可以为'LOO'或正整数，也可以为一个交叉验证生成器对象如`Kfold`、`LeaveOneOut`等
+        model.ShowResults(show_cv=True, make_fig=False)
+        model.SaveResults('./results.csv',notes='自己定义的一些备注信息')
+        ```
+- `modelEvaluator`是一个独立的模型评价模块，可以直接传入真实值`y_true`和预测值`y_pred`，得到分类或回归的评价值，它能根据传入的`y_true`自动识别其是属于分类数据还是回归数据。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`，这些可以通过`modelEvaluator`实例的属性查看。`modeling`模块的模型评价方法就是继承自`modelEvaluator`模块。用法如下（以回归任务的预测结果评价为例）：
+    ```python
+    from QSAR_package.model_evaluation import modelEvaluator
+    ```
+    ```python
+    evaluator = modelEvaluator(y_true,y_pred)
+    r2 = evaluator.r2
+    rmse = evaluator.rmse
+    ```
+    也可以直接查看该实例对象的属性字典来查看所有评价值：
+    ```python
+    evaluator = modelEvaluator(y_true,y_pred)
+    all_metrics = dict(evaluator.__dict__.items())
+    print(all_metrics)
+    ```
+    > {'r2': 0.7373, 'rmse': 0.6008}
