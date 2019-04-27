@@ -161,13 +161,13 @@
                           grid_scorer=grid_scorer, repeat=10)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))  # features_range为描述符数量的迭代范围，参数为元组或列表形式
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的若干个描述符名称。
 -  使用`gridSearchPlus`模块进行带描述符数量的重复网格寻优
     ```python
     grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的若干个描述符名称。
 ### 4.3 Early_stop策略——降低过拟合程度
 正常情况gridsearch所选的最优参数组合是交叉验证平均得分（mean_test_score）最高的参数组合，如果采用Early_stop策略，则会从（mean_test_score）最高分开始向下寻找（分值按降序排列）得分与最高分有显著差异的次优参数组合， 显著差异的标准就是该分值与最高分的差值占该分值的比率（取绝对值）大于指定的early_stop数值，最终选择的参数组合是降序排名在上述次优参数组合前一名的参数组合，在`gridSearchBase`和`gridSearchPlus`中都可以设置`early_stop`参数，默认为`None`，有效的`early_stop`参数值为`0`到`1`之间的浮点数，具体例子如下：
 ```python
