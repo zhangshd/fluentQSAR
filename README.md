@@ -185,4 +185,17 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
 ```
 
 ## 拟合模型/评价模型/保存结果
+- 用`modeling`模块可以传入一个学习器对象及对应的一组超参数，然后使用训练集进行拟合（`modeling.Fit`），同时也可以用来对测试集样本进行预测（`modeling.Predict`），还可以用训练集做交叉验证（通过sklearn中`metrics`模块下的`cross_val_predict`实现，通过`modeling.CrossVal`调用）。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`。评价结果可以通过`modeling.ShowResults`打印出来，如果想看训练集和测试集预测结果的散点图（回归任务），可以设定参数`make_fig=True`，该参数默认为`False`。评价结果及模型的超参数可以通过`modeling.SaveResults`方法保存，保存的机制是以追加的方式写入一个csv文件，如果在使用`modeling.ShowResults`设置了`make_fig=True`，则散点图也会保存出来（tif格式），同时，这组结果对应的模型文件也会保存（.model后缀），如果不需要，则可以在`modeling.SaveResults`中设置`save_model=False`。
+    -   `modeling`模块可以直接接收上一环节网格寻优的结果（`grid.best_estimator`、`grid.best_params`、`grid.best_features`），使用示例如下：
 
+        ```python
+        from QSAR_package.model_evaluation import modeling
+        ```
+        ```python
+        model = modeling(estimator=grid.best_estimator,params=grid.best_params)
+        model.Fit(tr_scaled_x.loc[:,grid.best_features], tr_y)
+        model.Predict(te_scaled_x.loc[:,grid.best_features],te_y)
+        model.CrossVal(cv="LOO")
+        model.ShowResults(show_cv=True, make_fig=False)
+        model.SaveResults('./results.csv',notes='自己定义的一些备注信息')
+        ```
