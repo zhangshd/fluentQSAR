@@ -273,5 +273,5 @@ te_eva = modelEvaluator(te_y, te_pred_y)
 print(tr_eva.r2,tr_eva.rmse,tr_eva.mae)
 print(te_eva.r2,te_eva.rmse,te_eva.mae)
 ```
-> 0.9263 0.3442 0.4126
+> 0.9263 0.3442 0.4126  
 > 0.5377 0.8584 0.6257
