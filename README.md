@@ -50,7 +50,7 @@ te_y = spliter.te_y
 ```python
 spliter.saveTrainTestLabel('./sPLA2_296_trOte0.csv') # 参数为存放路径
 ```
-保存出来的文件预览如下，表格只包含一列，第一行为表头名，后面为每个样本对应的训练集标签"tr"或测试集标签"te"。   
+保存出来的文件预览如下，表格只包含一列，第一行为表头名，后面为每个样本对应的训练集标签"tr"或测试集标签"te"，样本的顺序与原始输入文件的样本顺序一致。   
 <img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
 ### 2.2 根据训练集和测试集标签文件提取训练集和测试集
 ```python
