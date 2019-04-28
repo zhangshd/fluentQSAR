@@ -1,3 +1,9 @@
+---
+date: 2019-04-26 20:58
+status: draft
+title: QSAR_package使用说明
+---
+
 # QSAR_package使用说明
 ## 1. 使用前准备：
 下载所有脚本，把所有文件解压后存放至一个目录，如```$/myPackage/```
@@ -47,8 +53,10 @@ te_y = spliter.te_y
 ```
 如果想保存训练集测试集标签，则加入以下代码：
 ```python
-spliter.saveTrainTestLabel('C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte42.csv')
+spliter.saveTrainTestLabel('C:/OneDrive/Jupyter_notebook/regression_new/data/sPLA2_296_trOte42.csv') # 参数为存放路径
 ```
+保存出来的文件预览如下：
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
 ### 2.2 根据训练集和测试集标签文件提取训练集和测试集
 ```python
 from QSAR_package.data_split import extractData
@@ -103,9 +111,18 @@ from QSAR_package.data_scale import dataScale
 ```
 
 ```python
-tr_scaled_x = scaler.FitTransform(corr.selected_tr_x)
+scaler = dataScale(scale_range=(0.1, 0.9))
+tr_scaled_x = scaler.FitTransform(corr.selected_tr_x) 
 te_scaled_x = scaler.Transform(te_x,DataSet='test')  # 此压缩过程会自动从te_x中提取tr_scaled_x中所出现的所有列名对应的数据
 ```
+在上述代码中，`DataSet`参数如果为'train'则将压缩后的数据存入属性`scaler.tr_scaled_x`，如果为'test'，则将压缩后的数据存入属性`scaler.te_scaled_x`。`scaler.FitTransform`等价于先用`scaler.Fit`再用`scaler.Transform`，如下：
+```python
+scaler = dataScale(scale_range=(0.1, 0.9))
+scaler.Fit(corr.selected_tr_x)
+tr_scaled_x = scaler.Transform(corr.selected_tr_x,DataSet='train')
+te_scaled_x = scaler.Transform(te_x,DataSet='test')  
+```
+
 
 ### 3.3 RFE（递归消除法）排序——可选步骤
 经过压缩之后，数据就可以直接输入参数寻优环节了，如果还需要将描述符的顺序换为RFE（递归消除法）排序的顺序，则运行以下代码：
@@ -160,7 +177,7 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))  # features_range为描述符数量的迭代范围，参数为元组或列表形式
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的若干个描述符名称。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
 -  使用`gridSearchPlus`模块进行带描述符数量的重复网格寻优
     ```python
     grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5)
@@ -183,7 +200,7 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
 ```
 
 ## 拟合模型/评价模型/保存结果
-- 用`modeling`模块可以传入一个学习器对象及对应的一组超参数，然后使用训练集进行拟合（`modeling.Fit`），同时也可以用来对测试集样本进行预测（`modeling.Predict`），还可以用训练集做交叉验证（通过sklearn中`metrics`模块下的`cross_val_predict`实现，通过`modeling.CrossVal`调用）。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`。评价结果可以通过`modeling.ShowResults`打印出来，如果想看训练集和测试集预测结果的散点图（回归任务），可以设定参数`make_fig=True`，该参数默认为`False`。评价结果及模型的超参数可以通过`modeling.SaveResults`方法保存，保存的机制是以追加的方式写入一个csv文件，如果在使用`modeling.ShowResults`设置了`make_fig=True`，则散点图也会保存出来（tif格式），同时，这组结果对应的模型文件也会保存（.model后缀），如果不需要，则可以在`modeling.SaveResults`中设置`save_model=False`。
+- 用`modeling`模块可以传入一个学习器对象及对应的一组超参数，然后使用训练集进行拟合（`modeling.Fit`），同时也可以用来对测试集样本进行预测（`modeling.Predict`），还可以用训练集做交叉验证（通过sklearn中`metrics`模块下的`cross_val_predict`实现，通过`modeling.CrossVal`调用）。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`、`MAE`。评价结果可以通过`modeling.ShowResults`打印出来，如果想看训练集和测试集预测结果的散点图（回归任务），可以设定参数`make_fig=True`，该参数默认为`False`。评价结果及模型的超参数可以通过`modeling.SaveResults`方法保存，保存的机制是以追加的方式写入一个csv文件，如果在使用`modeling.ShowResults`设置了`make_fig=True`，则散点图也会保存出来（tif格式），同时，这组结果对应的模型文件也会保存（.model后缀），如果不需要，则可以在`modeling.SaveResults`中设置`save_model=False`。
     -   `modeling`模块可以直接接收上一环节网格寻优的结果（`grid.best_estimator`、`grid.best_params`、`grid.best_features`），使用示例如下：
 
         ```python
@@ -212,7 +229,7 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
         model.ShowResults(show_cv=True, make_fig=False)
         model.SaveResults('./results.csv',notes='自己定义的一些备注信息')
         ```
-- `modelEvaluator`是一个独立的模型评价模块，可以直接传入真实值`y_true`和预测值`y_pred`，得到分类或回归的评价值，它能根据传入的`y_true`自动识别其是属于分类数据还是回归数据。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`，这些可以通过`modelEvaluator`实例的属性查看。`modeling`模块的模型评价方法就是继承自`modelEvaluator`模块。用法如下（以回归任务的预测结果评价为例）：
+- `modelEvaluator`是一个独立的模型评价模块，可以直接传入真实值`y_true`和预测值`y_pred`，得到分类或回归的评价值，它能根据传入的`y_true`自动识别其是属于分类数据还是回归数据。分类任务的预测结果评价值包括`Accuracy`、`MCC`、`SE`、`SP`、`tp`、`tn`、`fp`、`fn`，回归任务的预测结果评价值包括`R2`、`RMSE`、`MAE`，这些可以通过`modelEvaluator`实例的属性查看。`modeling`模块的模型评价方法就是继承自`modelEvaluator`模块。用法如下（以回归任务的预测结果评价为例）：
     ```python
     from QSAR_package.model_evaluation import modelEvaluator
     ```
@@ -220,6 +237,7 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
     evaluator = modelEvaluator(y_true,y_pred)
     r2 = evaluator.r2
     rmse = evaluator.rmse
+    mae = evaluator.mae
     ```
     也可以直接查看该实例对象的属性字典来查看所有评价值：
     ```python
@@ -227,7 +245,7 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
     all_metrics = dict(evaluator.__dict__.items())
     print(all_metrics)
     ```
-    > {'r2': 0.7373, 'rmse': 0.6008}
+    > {'r2': 0.7373, 'rmse': 0.6008, 'mae': 0.5395}
     
 ## 重新载入模型进行预测
 在使用`modeling`模块的时候，如果保存了模型文件，则可以在后期重新导入模型，并使用该模型对某数据集进行预测，需要注意的是，用来进行预测的特征数据必须与所导入模型的原始训练数据在列方向上保持一致，且经过与原始训练数据相同的压缩过程，示例如下：
@@ -248,8 +266,8 @@ te_pred_y = model.predict(te_scaled_x)
 ```python
 tr_eva = modelEvaluator(tr_y, tr_pred_y)
 te_eva = modelEvaluator(te_y, te_pred_y)
-print(tr_eva.r2,tr_eva.rmse)
-print(te_eva.r2,te_eva.rmse)
+print(tr_eva.r2,tr_eva.rmse,tr_eva.mae)
+print(te_eva.r2,te_eva.rmse,te_eva.mae)
 ```
-> 0.9263 0.3442  
-> 0.5377 0.8584
+> 0.9263 0.3442 0.4126
+> 0.5377 0.8584 0.6257
