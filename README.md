@@ -19,6 +19,8 @@
     - [7. 重新载入模型进行预测](#7-重新载入模型进行预测)
 
 # QSAR_package使用说明
+看完如下使用说明后可仿照[例子脚本（仅供参考）](https://github.com/zhangshd/fluentQSAR/blob/master/Pipeline_single.py)，编写符合自身需求的调动脚本并投入实际使用，祝您使用愉快！
+
 ## 运行环境配置需求：
 - python3
 - scikit-learn
