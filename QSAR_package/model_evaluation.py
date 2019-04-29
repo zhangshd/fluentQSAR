@@ -201,7 +201,7 @@ class modeling(object):
         if save_model:
             from sklearn.externals import joblib
             model_path = os.path.join(parent_dir,'{}.model'.format(model_id))
-            joblib.dump(model_path)
+            joblib.dump(self.estimator,model_path)
         print("模型的结果已保存至\033[1m{}\033[0m".format(res_path))
 if __name__ == '__main__':
     pass
