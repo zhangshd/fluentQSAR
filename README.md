@@ -26,7 +26,7 @@
 - pandas
 - matplotlib  
 
-推荐使用`Anaconda3`。
+推荐安装和使用[Anaconda3](https://www.anaconda.com/distribution/)。
 
 ## 1. 使用前准备
 
