@@ -1,5 +1,6 @@
 
 - [QSAR_package使用说明](#QSAR_package使用说明)
+    - [运行环境配置需求](#运行环境配置需求)
     - [1. 使用前准备：](#1-使用前准备)
     - [2. 提取数据/随机划分训练集测试集——必选步骤三种方式三选一](#2-提取数据随机划分训练集测试集必选步骤三种方式三选一)
         - [2.1 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集](#21-输入一个总描述符文件采用随机划分的方式产生训练集和测试集)
@@ -18,15 +19,25 @@
     - [7. 重新载入模型进行预测](#7-重新载入模型进行预测)
 
 # QSAR_package使用说明
-## 1. 使用前准备：
-下载所有脚本，把所有文件解压后存放至一个目录，如```$/myPackage/```
+## 运行环境配置需求：
+- python3
+- scikit-learn
+- numpy
+- pandas
+- matplotlib  
 
-<img src="./photos/Snipaste_2019-04-25_12-47-38.png" alt="Sample"  width="800">
-<img src="./photos/Snipaste_2019-04-26_10-37-48.png" alt="Sample"  width="800">
+推荐使用`Anaconda3`。
+
+## 1. 使用前准备
+
+下载所有脚本（[点此直接下载](https://github.com/zhangshd/fluentQSAR/archive/master.zip)），把所有文件解压后存放至一个目录，如```$/myPackage/```
+
+<img src="./HTML_files/Snipaste_2019-04-25_12-47-38.png" alt="Sample"  width="800">
+<img src="./HTML_files/Snipaste_2019-04-26_10-37-48.png" alt="Sample"  width="800">
 
 新建一个文本文件，把上述目录的路径粘贴至这个文件内，然后把后缀改为```.pth```，如```myPackage.pth```
 
-<img src="./photos/Snipaste_2019-04-26_10-47-04.png" alt="Sample"  width="800">
+<img src="./HTML_files/Snipaste_2019-04-26_10-47-04.png" alt="Sample"  width="800">
 
 打开cmd，输入```python```进入Python交互界面  
 ```python
@@ -37,11 +48,11 @@ sys.path
 ```  
 找到一个类似```..\\lib\\site-packages```的路径  
 
-<img src="./photos/Snipaste_2019-04-26_10-51-27.png" alt="Sample"  width="800">
+<img src="./HTML_files/Snipaste_2019-04-26_10-51-27.png" alt="Sample"  width="800">
 
 然后进入这个文件夹，把刚才创建的```myPackage.pth```文件放入这个路径，
 
-<img src="./photos/Snipaste_2019-04-26_11-08-25.png" alt="Sample"  width="800">
+<img src="./HTML_files/Snipaste_2019-04-26_11-08-25.png" alt="Sample"  width="800">
 
 以上操作的目的是把自己的脚本库路径加入到Python的环境变量中
 
@@ -69,7 +80,7 @@ te_y = spliter.te_y
 spliter.saveTrainTestLabel('./sPLA2_296_trOte0.csv') # 参数为存放路径
 ```
 保存出来的文件预览如下，表格只包含一列，第一行为表头名，后面为每个样本对应的训练集标签"tr"或测试集标签"te"，样本的顺序与原始输入文件的样本顺序一致。   
-<img src="./photos/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
+<img src="./HTML_files/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
 ### 2.2 根据训练集和测试集标签文件提取训练集和测试集
 ```python
 from QSAR_package.data_split import extractData
@@ -154,12 +165,12 @@ from QSAR_package.feature_preprocess import RFE_ranking
 ```
 
 ```python
-rfe = RFE_ranking(estimator='SVR')   # "SVR" 为用于实现RFE排序的学习器（分类或回归算法）
+rfe = RFE_ranking(estimator='SVC')   # "SVC" 为用于实现RFE排序的学习器（分类或回归算法）
 rfe.Fit(tr_scaled_x, tr_y)
 tr_ranked_x = rfe.tr_ranked_x
 te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
 ```
-目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器对象，前提是该学习器对象有```coef_```或```feature_importance_```属性，详见[sklearn文档中RFE算法的介绍](https://scikit-learn.org/stable/modules/feature_selection.html#rfe"")
+目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让```estimator```参数等于一个自定义的学习器对象，前提是该学习器对象有```coef_```或```feature_importance_```属性，详见[sklearn文档中RFE算法的介绍](https://scikit-learn.org/stable/modules/feature_selection.html#rfe)
 
 ## 5. 参数寻优
 ### 5.1 不带描述符数量的重复网格寻优
@@ -193,6 +204,9 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
 因为前面已经介绍了可以通过Pearson相关性或者RFE方法对描述符数据排序，得到一个在列方向上有序的二维数据（DataFrame或numpy数组），如此以来，便可以将描述符的数量`n`也作为一个超参数，参与寻优过程，在网格寻优的外层套一个循环，每次循环取前`n`个描述符的数据，再用此数据进行重复网格寻优，最后找出在交叉验证的得分最高的描述符数量与参数组合。
 - 使用`gridSearchBase`模块进行带描述符数量的重复网格寻优
     ```python
+    from QSAR_package.grid_search import gridSearchBase
+    ```
+    ```python
     grid_estimator = SVC() # 学习器对象
     grid_dict = {'C':[1,0.1,0.01],'gamma':[1,0.1,0.01]}  # 对应学习器的参数字典
     grid_scorer = make_scorer(accuracy_score,greater_is_better=True)  # 打分器对象
@@ -201,6 +215,9 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     ```
     然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
 -  使用`gridSearchPlus`模块进行带描述符数量的重复网格寻优
+    ```python
+    from QSAR_package.grid_search import gridSearchPlus
+    ```
     ```python
     grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))
