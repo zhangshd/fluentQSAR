@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import copy
 import time
+import os
 
 __all__ = ["modelEvaluator","modeling"]
 
@@ -53,7 +54,7 @@ class modelEvaluator(object):
         """计算回归模型预测结果的R2、RMSE、MAE"""
         self.r2 = round(r2_score(y_true, y_pred),4)
         self.rmse = round(mean_squared_error(y_true, y_pred)**0.5,4)
-        # self.mae = mean_absolute_error(y_true, y_pred)
+        self.mae = round(mean_absolute_error(y_true, y_pred),4)
     
 class modeling(object):
     """拟合模型(训练集)及评价，预测样本(测试集)及评价，交互检验(训练集)及评价
@@ -171,9 +172,16 @@ class modeling(object):
         self.results_df.insert(0,'params',str(self.params))
         self.results_df.insert(0,'algorithm',str(self.estimatorName))
         self.results_df.insert(0,'n_features',self.tr_scaled_x.shape[1])
+        
+        t=time.localtime()
+        tm_str = "{:02d}{:02d}{:02d}{:02d}".format(t.tm_mon, t.tm_mday, t.tm_hour,t.tm_sec)  # 获取当前时间（月日时分）
+        model_id = "{}_{}_{}".format(tm_str,self.estimatorName,self.tr_scaled_x.shape[1])  #时间+算法名+描述符数量
+        parent_dir = os.path.dirname(res_path) # 获取传入路径的父级目录
+        
         if notes is not None:
             self.results_df.insert(len(self.results_df.columns),'notes',notes)
-
+        self.results_df.insert(len(self.results_df.columns),'model_id',model_id)
+        
         try:
             with open(res_path) as testfile:
                 pass
@@ -182,16 +190,16 @@ class modeling(object):
                 fobj.write(','.join(self.results_df.columns)+'\n')
         self.results_df.to_csv(res_path,index=False,header=False,mode='a',float_format='%6.4f')
         try:
-            self.plt.savefig(res_path[:-4]+'_{}_{}.tif'.format(self.estimatorName,self.tr_scaled_x.shape[1]),
-                             dpi=300,bbox_inches='tight')
+            fig_path = os.path.join(parent_dir,'{}.tif'.format(model_id))
+            self.plt.savefig(fig_path,dpi=300,bbox_inches='tight')
+            
         except:
             pass
         
         if save_model:
             from sklearn.externals import joblib
-            t=time.localtime()
-            tm_str = "{:02d}{:02d}{:02d}{:02d}".format(t.tm_mon, t.tm_mday, t.tm_hour,t.tm_sec) 
-            joblib.dump(self.estimator,res_path[:-4]+'_{}_{}_{}.model'.format(self.estimatorName,self.tr_scaled_x.shape[1],tm_str))
+            model_path = os.path.join(parent_dir,'{}.model'.format(model_id))
+            joblib.dump(model_path)
         print("模型的结果已保存至\033[1m{}\033[0m".format(res_path))
 if __name__ == '__main__':
     pass

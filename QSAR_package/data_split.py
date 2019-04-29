@@ -63,7 +63,19 @@ class extractData(object):
         if len(self.tr_y.unique())<=5:
             self.tr_y.astype(np.int32)
             self.te_y.astype(np.int32)
-
+    
+    def ExtractFeatureFromTXT(self,feature_txt_path=None):
+        """在已经提取了训练集和测试集数据的情况下（通过文件提取或随机划分得到），通过一个包含若干特征名的txt文件提取的部分特征数据，\
+        不在txt文件中的特征会被排除
+        参数：
+        -----
+        feature_txt_path：string型，存放所需特征名的txt文件路径，每个特征名之间用换行符分隔
+        """
+        if type(feature_txt_path) == str:
+            self.des_list = np.loadtxt(feature_txt_path,dtype=np.str).tolist()
+            self.tr_x = self.tr_x.loc[:,self.des_list]
+            self.te_x = self.te_x.loc[:,self.des_list]
+        
 class randomSpliter(extractData):
     """将数据集随机分成训练集和测试集，对于分类任务的数据，采取分层抽样；对于回归任务的数据，label值最大和最小的样本会被分到训练集中
        example：
