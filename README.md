@@ -21,12 +21,12 @@
 ## 1. 使用前准备：
 下载所有脚本，把所有文件解压后存放至一个目录，如```$/myPackage/```
 
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-25_12-47-38.png" alt="Sample"  width="800">
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-26_10-37-48.png" alt="Sample"  width="800">
+<img src="./photos/Snipaste_2019-04-25_12-47-38.png" alt="Sample"  width="800">
+<img src="./photos/Snipaste_2019-04-26_10-37-48.png" alt="Sample"  width="800">
 
 新建一个文本文件，把上述目录的路径粘贴至这个文件内，然后把后缀改为```.pth```，如```myPackage.pth```
 
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-26_10-47-04.png" alt="Sample"  width="800">
+<img src="./photos/Snipaste_2019-04-26_10-47-04.png" alt="Sample"  width="800">
 
 打开cmd，输入```python```进入Python交互界面  
 ```python
@@ -37,11 +37,11 @@ sys.path
 ```  
 找到一个类似```..\\lib\\site-packages```的路径  
 
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-26_10-51-27.png" alt="Sample"  width="800">
+<img src="./photos/Snipaste_2019-04-26_10-51-27.png" alt="Sample"  width="800">
 
 然后进入这个文件夹，把刚才创建的```myPackage.pth```文件放入这个路径，
 
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-26_11-08-25.png" alt="Sample"  width="800">
+<img src="./photos/Snipaste_2019-04-26_11-08-25.png" alt="Sample"  width="800">
 
 以上操作的目的是把自己的脚本库路径加入到Python的环境变量中
 
@@ -69,7 +69,7 @@ te_y = spliter.te_y
 spliter.saveTrainTestLabel('./sPLA2_296_trOte0.csv') # 参数为存放路径
 ```
 保存出来的文件预览如下，表格只包含一列，第一行为表头名，后面为每个样本对应的训练集标签"tr"或测试集标签"te"，样本的顺序与原始输入文件的样本顺序一致。   
-<img src="https://github.com/zhangshd/fluentQSAR/blob/master/photos/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
+<img src="./photos/Snipaste_2019-04-28_18-43-13.png" alt="Sample"  width="80">
 ### 2.2 根据训练集和测试集标签文件提取训练集和测试集
 ```python
 from QSAR_package.data_split import extractData
