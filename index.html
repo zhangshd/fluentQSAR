@@ -1,0 +1,1204 @@
+<div class="line_item line_item_display xiaoshujiang_element" data-line="0"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0"></p>
+<div class="toc">
+  <ul>
+    <li><a href="#qsar_packagee4bdbfe794a8e8afb4e6988e_1">QSAR_package使用说明</a>
+      <ul>
+        <li><a href="#120e4bdbfe794a8e5898de58786e5a487efbc9a_2">1. 使用前准备：</a>
+        </li>
+        <li><a href="#220e68f90e58f96e695b0e68daee99a8fe69cbae58892e58886e8aeade7bb83e99b86e6b58be8af95e99b86e28094e28094e5bf85e98089e6ada5e9aaa4efbc8ce4b889e7a78de696b9e5bc8fe4b889e98089e4b880_3">2. 提取数据/随机划分训练集测试集——必选步骤，三种方式三选一</a>
+          <ul>
+            <li><a href="#2120e8be93e585a5e4b880e4b8aae680bbe68f8fe8bfb0e7aca6e69687e4bbb6efbc8ce98787e794a8e99a8fe69cbae58892e58886e79a84e696b9e5bc8fe4baa7e7949fe8aeade7bb83e99b86e5928ce6b58be8af95e99b86_4">2.1 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集</a>
+            </li>
+            <li><a href="#2220e6a0b9e68daee8aeade7bb83e99b86e5928ce6b58be8af95e99b86e6a087e7adbee69687e4bbb6e68f90e58f96e8aeade7bb83e99b86e5928ce6b58be8af95e99b86_5">2.2 根据训练集和测试集标签文件提取训练集和测试集</a>
+            </li>
+            <li><a href="#2320e8aeade7bb83e99b86e6b58be8af95e99b86e694bee4ba8ee4b8a4e4b8aae69687e4bbb6e4b8ad_6">2.3 训练集测试集放于两个文件中</a>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#320e9809ae8bf87txte69687e4bbb6e68f90e58f96e983a8e58886e789b9e5be81e28094e28094e58fafe98089e6ada5e9aaa4_7">3. 通过txt文件提取部分特征——可选步骤</a>
+        </li>
+        <li><a href="#420pearsone79bb8e585b3e680a7e7ad9be98089rfee68e92e5ba8fe695b0e68daee58e8be7bca9_8">4. Pearson相关性筛选/RFE排序/数据压缩</a>
+          <ul>
+            <li><a href="#4120pearsone79bb8e585b3e680a7e7ad9be98089efbc88e68c89e8aeade7bb83e99b86e695b0e68daee7ad9be98089efbc89e28094e28094e58fafe98089e6ada5e9aaa4efbc88e4b880e888ace983bde4bc9ae794a8e4b88aefbc89_9">4.1 Pearson相关性筛选（按训练集数据筛选）——可选步骤（一般都会用上）</a>
+            </li>
+            <li><a href="#4220e695b0e68daee58e8be7bca9e28094e28094e5bf85e8a681e6ada5e9aaa4_10">4.2 数据压缩——必要步骤</a>
+            </li>
+            <li><a href="#4320rfeefbc88e98092e5bd92e6b688e999a4e6b395efbc89e68e92e5ba8fe28094e28094e58fafe98089e6ada5e9aaa4_11">4.3 RFE（递归消除法）排序——可选步骤</a>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#520e58f82e695b0e5afbbe4bc98_12">5. 参数寻优</a>
+          <ul>
+            <li><a href="#5120e4b88de5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_13">5.1 不带描述符数量的重复网格寻优</a>
+            </li>
+            <li><a href="#5220e5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_14">5.2 带描述符数量的重复网格寻优</a>
+            </li>
+            <li><a href="#5320early_stope7ad96e795a5e28094e28094e9998de4bd8ee8bf87e68b9fe59088e7a88be5baa6_15">5.3 Early_stop策略——降低过拟合程度</a>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#620e68b9fe59088e6a8a1e59e8be8af84e4bbb7e6a8a1e59e8be4bf9de5ad98e7bb93e69e9c_16">6. 拟合模型/评价模型/保存结果</a>
+        </li>
+        <li><a href="#720e9878de696b0e8bdbde585a5e6a8a1e59e8be8bf9be8a18ce9a284e6b58b_17">7. 重新载入模型进行预测</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+<p></p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="1"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="qsar_packagee4bdbfe794a8e8afb4e6988e_1" class="blank_anchor_name"></a>
+  <a id="qsar_packagee4bdbfe794a8e8afb4e6988e_1" class="blank_anchor_id"></a>
+  <a name="qsar_package使用说明" class="blank_anchor_name"></a>
+  <a id="qsar_package使用说明" class="blank_anchor_id"></a>
+</div>
+<h1 class="xsj_heading_hash xsj_heading xsj_heading_h1">
+  <span class="xsj_heading_content">QSAR_package使用说明</span>
+</h1>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="2"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="120e4bdbfe794a8e5898de58786e5a487efbc9a_2" class="blank_anchor_name"></a>
+  <a id="120e4bdbfe794a8e5898de58786e5a487efbc9a_2" class="blank_anchor_id"></a>
+  <a name="1-使用前准备" class="blank_anchor_name"></a>
+  <a id="1-使用前准备" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">1. 使用前准备：</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="3"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">下载所有脚本，把所有文件解压后存放至一个目录，如
+  <code>$/myPackage/</code>
+</p>
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-25_12-47-38.png"
+alt="Sample" width="800">
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_10-37-48.png"
+alt="Sample" width="800">
+<div class="line_item line_item_display xiaoshujiang_element" data-line="8"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">新建一个文本文件，把上述目录的路径粘贴至这个文件内，然后把后缀改为
+  <code>.pth</code>，如
+  <code>myPackage.pth</code>
+</p>
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_10-47-04.png"
+alt="Sample" width="800">
+<div class="line_item line_item_display xiaoshujiang_element" data-line="12"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">打开cmd，输入
+  <code>python</code>进入Python交互界面</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="13"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">import</span> sys</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="16"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">sys.path</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="19"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">找到一个类似
+  <code>..\\lib\\site-packages</code>的路径</p>
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_10-51-27.png"
+alt="Sample" width="800">
+<div class="line_item line_item_display xiaoshujiang_element" data-line="23"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">然后进入这个文件夹，把刚才创建的
+  <code>myPackage.pth</code>文件放入这个路径，</p>
+<img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-26_11-08-25.png"
+alt="Sample" width="800">
+<div class="line_item line_item_display xiaoshujiang_element" data-line="27"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">以上操作的目的是把自己的脚本库路径加入到Python的环境变量中</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="29"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="220e68f90e58f96e695b0e68daee99a8fe69cbae58892e58886e8aeade7bb83e99b86e6b58be8af95e99b86e28094e28094e5bf85e98089e6ada5e9aaa4efbc8ce4b889e7a78de696b9e5bc8fe4b889e98089e4b880_3"
+  class="blank_anchor_name"></a>
+  <a id="220e68f90e58f96e695b0e68daee99a8fe69cbae58892e58886e8aeade7bb83e99b86e6b58be8af95e99b86e28094e28094e5bf85e98089e6ada5e9aaa4efbc8ce4b889e7a78de696b9e5bc8fe4b889e98089e4b880_3"
+  class="blank_anchor_id"></a>
+  <a name="2-提取数据随机划分训练集测试集必选步骤三种方式三选一" class="blank_anchor_name"></a>
+  <a id="2-提取数据随机划分训练集测试集必选步骤三种方式三选一" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">2. 提取数据/随机划分训练集测试集——必选步骤，三种方式三选一</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="31"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">
+  <strong>在存放描述符数据的文件中，一定要把标签列放于第一个特征（描述符）列的前一列</strong>
+</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="33"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="2120e8be93e585a5e4b880e4b8aae680bbe68f8fe8bfb0e7aca6e69687e4bbb6efbc8ce98787e794a8e99a8fe69cbae58892e58886e79a84e696b9e5bc8fe4baa7e7949fe8aeade7bb83e99b86e5928ce6b58be8af95e99b86_4"
+  class="blank_anchor_name"></a>
+  <a id="2120e8be93e585a5e4b880e4b8aae680bbe68f8fe8bfb0e7aca6e69687e4bbb6efbc8ce98787e794a8e99a8fe69cbae58892e58886e79a84e696b9e5bc8fe4baa7e7949fe8aeade7bb83e99b86e5928ce6b58be8af95e99b86_4"
+  class="blank_anchor_id"></a>
+  <a name="21-输入一个总描述符文件采用随机划分的方式产生训练集和测试集" class="blank_anchor_name"></a>
+  <a id="21-输入一个总描述符文件采用随机划分的方式产生训练集和测试集" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">2.1 输入一个总描述符文件，采用随机划分的方式产生训练集和测试集</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="34"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.data_split
+      <span class="hljs-keyword">import</span> randomSpliter</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="38"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;8行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">file_name =
+      <span class="hljs-string">"./spla2_296_rdkit2d.csv"</span>
+      <span class="hljs-comment"># 描述符数据文件路径</span>
+      spliter = randomSpliter(test_size=
+      <span class="hljs-number">0.25</span>,random_state=
+      <span class="hljs-number">0</span>) spliter.ExtractTotalData(file_name,label_name=
+      <span class="hljs-string">'Activity'</span>)
+      <span class="hljs-comment">#注意指定标签（活性）列的列名</span>
+      spliter.SplitData() tr_x = spliter.tr_x tr_y = spliter.tr_y te_x = spliter.te_x
+      te_y = spliter.te_y</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="48"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">如果想保存训练集测试集标签，则加入以下代码：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="49"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">spliter.saveTrainTestLabel(
+      <span class="hljs-string">'./sPLA2_296_trOte0.csv'</span>)
+      <span class="hljs-comment"># 参数为存放路径</span>
+    </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="52"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">保存出来的文件预览如下，表格只包含一列，第一行为表头名，后面为每个样本对应的训练集标签"tr"或测试集标签"te"，样本的顺序与原始输入文件的样本顺序一致。
+  <br>
+  <img src="https://github.com/zhangshd/test/blob/master/%E7%A4%BA%E4%BE%8B%E5%9B%BE%E7%89%87/Snipaste_2019-04-28_18-43-13.png"
+  alt="Sample" width="80">
+</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="54"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="2220e6a0b9e68daee8aeade7bb83e99b86e5928ce6b58be8af95e99b86e6a087e7adbee69687e4bbb6e68f90e58f96e8aeade7bb83e99b86e5928ce6b58be8af95e99b86_5"
+  class="blank_anchor_name"></a>
+  <a id="2220e6a0b9e68daee8aeade7bb83e99b86e5928ce6b58be8af95e99b86e6a087e7adbee69687e4bbb6e68f90e58f96e8aeade7bb83e99b86e5928ce6b58be8af95e99b86_5"
+  class="blank_anchor_id"></a>
+  <a name="22-根据训练集和测试集标签文件提取训练集和测试集" class="blank_anchor_name"></a>
+  <a id="22-根据训练集和测试集标签文件提取训练集和测试集" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">2.2 根据训练集和测试集标签文件提取训练集和测试集</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="55"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.data_split
+      <span class="hljs-keyword">import</span> extractData</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="59"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;8行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">data_path =
+      <span class="hljs-string">'./spla2_296_rdkit2d.csv'</span>
+      <span class="hljs-comment"># 描述符数据文件路径</span>
+      trOte_path =
+      <span class="hljs-string">'./sPLA2_296_trOte0.csv'</span>
+      <span class="hljs-comment"># 训练集和测试集标签文件路径</span>
+      spliter = extractData() spliter.ExtractTrainTestFromLabel(data_path, trOte_path,
+      label_name=
+      <span class="hljs-string">'Activity'</span>)
+      <span class="hljs-comment">#注意指定标签（活性）列的列名</span>
+      tr_x = spliter.tr_x tr_y = spliter.tr_y te_x = spliter.te_x te_y = spliter.te_y</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="69"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="2320e8aeade7bb83e99b86e6b58be8af95e99b86e694bee4ba8ee4b8a4e4b8aae69687e4bbb6e4b8ad_6"
+  class="blank_anchor_name"></a>
+  <a id="2320e8aeade7bb83e99b86e6b58be8af95e99b86e694bee4ba8ee4b8a4e4b8aae69687e4bbb6e4b8ad_6"
+  class="blank_anchor_id"></a>
+  <a name="23-训练集测试集放于两个文件中" class="blank_anchor_name"></a>
+  <a id="23-训练集测试集放于两个文件中" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">2.3 训练集测试集放于两个文件中</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="70"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">如果已经提前分好训练集测试集，且训练集和测试集文件存放于两个文件中，则使用以下代码</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="72"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.data_split
+      <span class="hljs-keyword">import</span> extractData</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="76"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;8行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">train_path =
+      <span class="hljs-string">'./train_312_maccs.csv'</span>
+      <span class="hljs-comment"># 训练集数据文件路径</span>
+      test_path =
+      <span class="hljs-string">'./test_140_maccs.csv'</span>
+      <span class="hljs-comment"># 测试集数据文件路径</span>
+      spliter = extractData() spliter.ExtractTrainTestData(train_path, test_path, label_name=
+      <span
+      class="hljs-string">'Activity'</span>)
+        <span class="hljs-comment">#注意指定标签（活性）列的列名</span>
+        tr_x = spliter.tr_x tr_y = spliter.tr_y te_x = spliter.te_x te_y = spliter.te_y</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="86"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="320e9809ae8bf87txte69687e4bbb6e68f90e58f96e983a8e58886e789b9e5be81e28094e28094e58fafe98089e6ada5e9aaa4_7"
+  class="blank_anchor_name"></a>
+  <a id="320e9809ae8bf87txte69687e4bbb6e68f90e58f96e983a8e58886e789b9e5be81e28094e28094e58fafe98089e6ada5e9aaa4_7"
+  class="blank_anchor_id"></a>
+  <a name="3-通过txt文件提取部分特征可选步骤" class="blank_anchor_name"></a>
+  <a id="3-通过txt文件提取部分特征可选步骤" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">3. 通过txt文件提取部分特征——可选步骤</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="87"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">在前面已经提取了训练集和测试集数据的情况下（通过文件提取或随机划分得到），可以通过一个包含若干描述符名的txt文件提取的部分特征数据，不在txt文件中的描述符会被排除。用法如下：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="88"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;4行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">feature_txt_path =
+      <span class="hljs-string">'./descriptors.txt'</span>
+      <span class="hljs-comment"># 存放所需描述符名的文件路径</span>
+      spliter.ExtractFeatureFromTXT(feature_txt_path) tr_x = spliter.tr_x
+      <span
+      class="hljs-comment"># 运行ExtractFeatureFromTXT后重新赋值tr_x</span>
+        te_x = spliter.te_x
+        <span class="hljs-comment"># 运行ExtractFeatureFromTXT后重新赋值te_x</span>
+    </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="95"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="420pearsone79bb8e585b3e680a7e7ad9be98089rfee68e92e5ba8fe695b0e68daee58e8be7bca9_8"
+  class="blank_anchor_name"></a>
+  <a id="420pearsone79bb8e585b3e680a7e7ad9be98089rfee68e92e5ba8fe695b0e68daee58e8be7bca9_8"
+  class="blank_anchor_id"></a>
+  <a name="4-pearson相关性筛选rfe排序数据压缩" class="blank_anchor_name"></a>
+  <a id="4-pearson相关性筛选rfe排序数据压缩" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">4. Pearson相关性筛选/RFE排序/数据压缩</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="96"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="4120pearsone79bb8e585b3e680a7e7ad9be98089efbc88e68c89e8aeade7bb83e99b86e695b0e68daee7ad9be98089efbc89e28094e28094e58fafe98089e6ada5e9aaa4efbc88e4b880e888ace983bde4bc9ae794a8e4b88aefbc89_9"
+  class="blank_anchor_name"></a>
+  <a id="4120pearsone79bb8e585b3e680a7e7ad9be98089efbc88e68c89e8aeade7bb83e99b86e695b0e68daee7ad9be98089efbc89e28094e28094e58fafe98089e6ada5e9aaa4efbc88e4b880e888ace983bde4bc9ae794a8e4b88aefbc89_9"
+  class="blank_anchor_id"></a>
+  <a name="41-pearson相关性筛选按训练集数据筛选可选步骤一般都会用上" class="blank_anchor_name"></a>
+  <a id="41-pearson相关性筛选按训练集数据筛选可选步骤一般都会用上" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">4.1 Pearson相关性筛选（按训练集数据筛选）——可选步骤（一般都会用上）</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="97"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.feature_preprocess
+      <span class="hljs-keyword">import</span> correlationSelection</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="101"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">corr = correlationSelection() corr.PearsonXX(tr_x, tr_y,threshold_low=
+      <span
+      class="hljs-number">0.1</span>, threshold_up=
+        <span class="hljs-number">0.9</span>)</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="106"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">筛选结果的描述符顺序已经按照其跟活性的Pearson相关性从高到低排好序，筛选之后的数据可通过
+  <code>corr.selected_tr_x</code>获取，该属性是筛选之后的DataFrame对象，然后将此结果输入数据压缩环节。</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="108"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="4220e695b0e68daee58e8be7bca9e28094e28094e5bf85e8a681e6ada5e9aaa4_10" class="blank_anchor_name"></a>
+  <a id="4220e695b0e68daee58e8be7bca9e28094e28094e5bf85e8a681e6ada5e9aaa4_10"
+  class="blank_anchor_id"></a>
+  <a name="42-数据压缩必要步骤" class="blank_anchor_name"></a>
+  <a id="42-数据压缩必要步骤" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">4.2 数据压缩——必要步骤</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="110"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">数据压缩模块
+  <code>dataScale</code>可以将所有描述符数据压缩至指定的区间范围（如0.1到0.9），此处直接使用上一步骤Pearson相关性筛选产生的训练集数据
+  <code>corr.selected_tr_x</code>拟合压缩器，然后对测试集数据进行压缩，此模块能自动识别连续型的描述符数据和指纹描述符数据，如果输入的是指纹描述符数据，则压缩之后数据不会有变化，所以，为了减少代码的改动，保证变量的统一，可以让指纹描述符也经过数据压缩过程，其数值不会发生变化。</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="112"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.data_scale
+      <span class="hljs-keyword">import</span> dataScale</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="116"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;3行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">scaler = dataScale(scale_range=(
+      <span class="hljs-number">0.1</span>,
+      <span class="hljs-number">0.9</span>)) tr_scaled_x = scaler.FitTransform(corr.selected_tr_x) te_scaled_x
+      = scaler.Transform(te_x,DataSet=
+      <span class="hljs-string">'test'</span>)
+      <span class="hljs-comment"># 此压缩过程会自动从te_x中提取tr_scaled_x中所出现的所有列名对应的数据</span>
+    </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="121"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">在上述代码中，
+  <code>DataSet</code>参数如果为'train'则将压缩后的数据存入属性
+  <code>scaler.tr_scaled_x</code>，如果为'test'，则将压缩后的数据存入属性
+  <code>scaler.te_scaled_x</code>。
+  <code>scaler.FitTransform</code>等价于先用
+  <code>scaler.Fit</code>再用
+  <code>scaler.Transform</code>，如下：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="122"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;4行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">scaler = dataScale(scale_range=(
+      <span class="hljs-number">0.1</span>,
+      <span class="hljs-number">0.9</span>)) scaler.Fit(corr.selected_tr_x) tr_scaled_x = scaler.Transform(corr.selected_tr_x,DataSet=
+      <span
+      class="hljs-string">'train'</span>) te_scaled_x = scaler.Transform(te_x,DataSet=
+        <span class="hljs-string">'test'</span>) </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="130"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="4320rfeefbc88e98092e5bd92e6b688e999a4e6b395efbc89e68e92e5ba8fe28094e28094e58fafe98089e6ada5e9aaa4_11"
+  class="blank_anchor_name"></a>
+  <a id="4320rfeefbc88e98092e5bd92e6b688e999a4e6b395efbc89e68e92e5ba8fe28094e28094e58fafe98089e6ada5e9aaa4_11"
+  class="blank_anchor_id"></a>
+  <a name="43-rfe递归消除法排序可选步骤" class="blank_anchor_name"></a>
+  <a id="43-rfe递归消除法排序可选步骤" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">4.3 RFE（递归消除法）排序——可选步骤</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="131"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">经过压缩之后，数据就可以直接输入参数寻优环节了，如果还需要将描述符的顺序换为RFE（递归消除法）排序的顺序，则运行以下代码：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="133"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> QSAR_package.feature_preprocess
+      <span class="hljs-keyword">import</span> RFE_ranking</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="137"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;4行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">rfe = RFE_ranking(estimator=
+      <span class="hljs-string">'SVR'</span>)
+      <span class="hljs-comment"># "SVR" 为用于实现RFE排序的学习器（分类或回归算法）</span>
+      rfe.Fit(tr_scaled_x, tr_y) tr_ranked_x = rfe.tr_ranked_x te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="143"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">目前支持字符串指定的学习器有"SVC"(分类)、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），如果想尝试其他学习器，可以直接让
+  <code>estimator</code>参数等于一个自定义的学习器对象，前提是该学习器对象有
+  <code>coef_</code>或
+  <code>feature_importance_</code>属性，详见<a href="https://scikit-learn.org/stable/modules/feature_selection.html#rfe%22%22"
+  class="xsj_link xsj_manu_link">sklearn文档中RFE算法的介绍</a>
+</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="145"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="520e58f82e695b0e5afbbe4bc98_12" class="blank_anchor_name"></a>
+  <a id="520e58f82e695b0e5afbbe4bc98_12" class="blank_anchor_id"></a>
+  <a name="5-参数寻优" class="blank_anchor_name"></a>
+  <a id="5-参数寻优" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">5. 参数寻优</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="146"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="5120e4b88de5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_13"
+  class="blank_anchor_name"></a>
+  <a id="5120e4b88de5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_13"
+  class="blank_anchor_id"></a>
+  <a name="51-不带描述符数量的重复网格寻优" class="blank_anchor_name"></a>
+  <a id="51-不带描述符数量的重复网格寻优" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">5.1 不带描述符数量的重复网格寻优</span>
+</h3>
+<div class="line_item xiaoshujiang_element" data-line="147"></div>
+<ul>
+  <li>
+
+    <div class="line_item xiaoshujiang_element" data-line="147"></div>
+    <p class="xsj_paragraph xsj_paragraph_level_2">使用
+      <code>gridSearchBase</code>模块可以自定义传入学习器、参数字典、打分器对象，进行重复网格寻优，此处以
+      <code>SVC</code>算法的寻优为例</p>
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;3行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">
+          <span class="hljs-keyword">from</span> QSAR_package.grid_search
+          <span class="hljs-keyword">import</span> gridSearchBase
+          <span class="hljs-keyword">from</span> sklearn.svm
+          <span class="hljs-keyword">import</span> SVC
+          <span class="hljs-keyword">from</span> sklearn.metrics
+          <span class="hljs-keyword">import</span> accuracy_score,make_scorer</code>
+      </pre>
+    </div>
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;5行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">grid_estimator = SVC()
+          <span class="hljs-comment"># 学习器对象</span>
+          grid_dict = {
+          <span class="hljs-string">'C'</span>:[
+          <span class="hljs-number">1</span>,
+          <span class="hljs-number">0.1</span>,
+          <span class="hljs-number">0.01</span>],
+          <span class="hljs-string">'gamma'</span>:[
+          <span class="hljs-number">1</span>,
+          <span class="hljs-number">0.1</span>,
+          <span class="hljs-number">0.01</span>]}
+          <span class="hljs-comment"># 对应学习器的参数字典</span>
+          grid_scorer = make_scorer(accuracy_score,greater_is_better=
+          <span class="hljs-keyword">True</span>)
+          <span class="hljs-comment"># 打分器对象</span>
+          grid = gridSearchBase(fold=
+          <span class="hljs-number">5</span>, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer,
+          repeat=
+          <span class="hljs-number">10</span>) grid.Fit(tr_scaled_x,tr_y)
+        </code>
+      </pre>
+    </div>
+    <p class="xsj_paragraph xsj_paragraph_level_2">其中
+      <code>fold</code>为网格寻优中交叉验证的重数，
+      <code>repeat</code>为网格寻优的重复次数；
+      <br> 然后可以通过
+      <code>grid.best_params</code>获取最优参数，通过
+      <code>grid.best_estimator</code>获取拟合好的学习器。</p>
+  </li>
+  <li>
+
+    <div class="line_item xiaoshujiang_element" data-line="164"></div>
+    <p class="xsj_paragraph xsj_paragraph_level_2">使用
+      <code>gridSearchPlus</code>模块可以通过字符串直接指定预定义好的学习器和对应的参数字典及打分器，现支持的算法有"SVC"、"DTC"、"RFC"、"SVR"、"RFR"，调用代码（不带描述符数量的寻优）如下：</p>
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">
+          <span class="hljs-keyword">from</span> QSAR_package.grid_search
+          <span class="hljs-keyword">import</span> gridSearchPlus</code>
+      </pre>
+    </div>
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">grid = gridSearchPlus(grid_estimatorName=
+          <span class="hljs-string">'SVC'</span>, fold=
+          <span class="hljs-number">5</span>, repeat=
+          <span class="hljs-number">5</span>) grid.Fit(tr_scaled_x,tr_y)
+        </code>
+      </pre>
+    </div>
+    <p class="xsj_paragraph xsj_paragraph_level_2">然后可以通过
+      <code>grid.best_params</code>获取最优参数，通过
+      <code>grid.best_estimator</code>获取拟合好的学习器。</p>
+  </li>
+</ul>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="173"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="5220e5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_14"
+  class="blank_anchor_name"></a>
+  <a id="5220e5b8a6e68f8fe8bfb0e7aca6e695b0e9878fe79a84e9878de5a48de7bd91e6a0bce5afbbe4bc98_14"
+  class="blank_anchor_id"></a>
+  <a name="52-带描述符数量的重复网格寻优" class="blank_anchor_name"></a>
+  <a id="52-带描述符数量的重复网格寻优" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">5.2 带描述符数量的重复网格寻优</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="174"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">因为前面已经介绍了可以通过Pearson相关性或者RFE方法对描述符数据排序，得到一个在列方向上有序的二维数据（DataFrame或numpy数组），如此以来，便可以将描述符的数量
+  <code>n</code>也作为一个超参数，参与寻优过程，在网格寻优的外层套一个循环，每次循环取前
+  <code>n</code>个描述符的数据，再用此数据进行重复网格寻优，最后找出在交叉验证的得分最高的描述符数量与参数组合。</p>
+<div class="line_item xiaoshujiang_element" data-line="175"></div>
+<ul>
+  <li>
+    <div class="line_item xiaoshujiang_element" data-line="175"></div>
+    使用
+    <code>gridSearchBase</code>模块进行带描述符数量的重复网格寻优
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;5行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">grid_estimator = SVC()
+          <span class="hljs-comment"># 学习器对象</span>
+          grid_dict = {
+          <span class="hljs-string">'C'</span>:[
+          <span class="hljs-number">1</span>,
+          <span class="hljs-number">0.1</span>,
+          <span class="hljs-number">0.01</span>],
+          <span class="hljs-string">'gamma'</span>:[
+          <span class="hljs-number">1</span>,
+          <span class="hljs-number">0.1</span>,
+          <span class="hljs-number">0.01</span>]}
+          <span class="hljs-comment"># 对应学习器的参数字典</span>
+          grid_scorer = make_scorer(accuracy_score,greater_is_better=
+          <span class="hljs-keyword">True</span>)
+          <span class="hljs-comment"># 打分器对象</span>
+          grid = gridSearchBase(fold=
+          <span class="hljs-number">5</span>, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer,
+          repeat=
+          <span class="hljs-number">10</span>) grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(
+          <span
+          class="hljs-number">5</span>,
+            <span class="hljs-number">20</span>))
+            <span class="hljs-comment"># features_range为描述符数量的迭代范围，参数为包含两个整数的元组或列表形式，其中第一个整数为描述符数量的下限，第二个整数为描述符数量的上限</span>
+        </code>
+      </pre>
+    </div>
+    然后可以通过
+    <code>grid.best_params</code>获取最优参数，通过
+    <code>grid.best_estimator</code>获取拟合好的学习器，还可以通过
+    <code>grid.best_features</code>获取最终选择的描述符名称。</li>
+  <li>
+    <div class="line_item xiaoshujiang_element" data-line="184"></div>
+    使用
+    <code>gridSearchPlus</code>模块进行带描述符数量的重复网格寻优
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">grid = gridSearchPlus(grid_estimatorName=
+          <span class="hljs-string">'SVC'</span>, fold=
+          <span class="hljs-number">5</span>, repeat=
+          <span class="hljs-number">5</span>) grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(
+          <span
+          class="hljs-number">5</span>,
+            <span class="hljs-number">20</span>))</code>
+      </pre>
+    </div>
+    然后可以通过
+    <code>grid.best_params</code>获取最优参数，通过
+    <code>grid.best_estimator</code>获取拟合好的学习器，还可以通过
+    <code>grid.best_features</code>获取最终选择的若干个描述符名称。</li>
+</ul>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="190"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="5320early_stope7ad96e795a5e28094e28094e9998de4bd8ee8bf87e68b9fe59088e7a88be5baa6_15"
+  class="blank_anchor_name"></a>
+  <a id="5320early_stope7ad96e795a5e28094e28094e9998de4bd8ee8bf87e68b9fe59088e7a88be5baa6_15"
+  class="blank_anchor_id"></a>
+  <a name="53-early_stop策略降低过拟合程度" class="blank_anchor_name"></a>
+  <a id="53-early_stop策略降低过拟合程度" class="blank_anchor_id"></a>
+</div>
+<h3 class="xsj_heading_hash xsj_heading xsj_heading_h3">
+  <span class="xsj_heading_content">5.3 Early_stop策略——降低过拟合程度</span>
+</h3>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="191"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">正常情况gridsearch所选的最优参数组合是交叉验证平均得分（mean_test_score）最高的参数组合，如果采用Early_stop策略，则会从（mean_test_score）最高分开始向下寻找（分值按降序排列）得分与最高分有显著差异的次优参数组合，
+  显著差异的标准就是该分值与最高分的差值占该分值的比率（取绝对值）大于指定的early_stop数值，最终选择的参数组合是降序排名在上述次优参数组合前一名的参数组合，在
+  <code>gridSearchBase</code>和
+  <code>gridSearchPlus</code>中都可以设置
+  <code>early_stop</code>参数，默认为
+  <code>None</code>，有效的
+  <code>early_stop</code>参数值为
+  <code>0</code>到
+  <code>1</code>之间的浮点数，具体例子如下：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="192"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;5行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">grid_estimator = SVC()
+      <span class="hljs-comment"># 学习器对象</span>
+      grid_dict = {
+      <span class="hljs-string">'C'</span>:[
+      <span class="hljs-number">1</span>,
+      <span class="hljs-number">0.1</span>,
+      <span class="hljs-number">0.01</span>],
+      <span class="hljs-string">'gamma'</span>:[
+      <span class="hljs-number">1</span>,
+      <span class="hljs-number">0.1</span>,
+      <span class="hljs-number">0.01</span>]}
+      <span class="hljs-comment"># 对应学习器的参数字典</span>
+      grid_scorer = make_scorer(accuracy_score,greater_is_better=
+      <span class="hljs-keyword">True</span>)
+      <span class="hljs-comment"># 打分器对象</span>
+      grid = gridSearchBase(fold=
+      <span class="hljs-number">5</span>, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer,
+      repeat=
+      <span class="hljs-number">10</span>, early_stop=
+      <span class="hljs-number">0.01</span>) ...
+    </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="199"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">或者</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="200"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">grid = gridSearchPlus(grid_estimatorName=
+      <span class="hljs-string">'SVC'</span>, fold=
+      <span class="hljs-number">5</span>, repeat=
+      <span class="hljs-number">5</span>, early_stop=
+      <span class="hljs-number">0.01</span>) ...
+    </code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="205"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="620e68b9fe59088e6a8a1e59e8be8af84e4bbb7e6a8a1e59e8be4bf9de5ad98e7bb93e69e9c_16"
+  class="blank_anchor_name"></a>
+  <a id="620e68b9fe59088e6a8a1e59e8be8af84e4bbb7e6a8a1e59e8be4bf9de5ad98e7bb93e69e9c_16"
+  class="blank_anchor_id"></a>
+  <a name="6-拟合模型评价模型保存结果" class="blank_anchor_name"></a>
+  <a id="6-拟合模型评价模型保存结果" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">6. 拟合模型/评价模型/保存结果</span>
+</h2>
+<div class="line_item xiaoshujiang_element" data-line="206"></div>
+<ul>
+  <li>
+    <div class="line_item xiaoshujiang_element" data-line="206"></div>
+    用
+    <code>modeling</code>模块可以传入一个学习器对象及对应的一组超参数，然后使用训练集进行拟合（
+    <code>modeling.Fit</code>），同时也可以用来对测试集样本进行预测（
+    <code>modeling.Predict</code>），还可以用训练集做交叉验证（通过sklearn中
+    <code>metrics</code>模块下的
+    <code>cross_val_predict</code>实现，通过
+    <code>modeling.CrossVal</code>调用）。分类任务的预测结果评价值包括
+    <code>Accuracy</code>、
+    <code>MCC</code>、
+    <code>SE</code>、
+    <code>SP</code>、
+    <code>tp</code>、
+    <code>tn</code>、
+    <code>fp</code>、
+    <code>fn</code>，回归任务的预测结果评价值包括
+    <code>R2</code>、
+    <code>RMSE</code>、
+    <code>MAE</code>。评价结果可以通过
+    <code>modeling.ShowResults</code>打印出来，如果想看训练集和测试集预测结果的散点图（回归任务），可以设定参数
+    <code>make_fig=True</code>，该参数默认为
+    <code>False</code>。评价结果及模型的超参数可以通过
+    <code>modeling.SaveResults</code>方法保存，保存的机制是以追加的方式写入一个csv文件，如果在使用
+    <code>modeling.ShowResults</code>设置了
+    <code>make_fig=True</code>，则散点图也会保存出来（tif格式），同时，这组结果对应的模型文件也会保存（.model后缀），如果不需要，则可以在
+    <code>modeling.SaveResults</code>中设置
+    <code>save_model=False</code>。
+    <ul>
+      <li>
+        <p class="xsj_paragraph xsj_paragraph_level_4">
+          <code>modeling</code>模块可以直接接收上一环节网格寻优的结果（
+          <code>grid.best_estimator</code>、
+          <code>grid.best_params</code>、
+          <code>grid.best_features</code>），使用示例如下：</p>
+        <div class="xiaoshujiang_code_container">
+          <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+            <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+            <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+            <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+            <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+            <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+            <span class="xiaoshujiang_code_title"></span>
+            <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+          </div>
+          <pre>
+            <code class="language-python hljs" data-info="python">
+              <span class="hljs-keyword">from</span> QSAR_package.model_evaluation
+              <span class="hljs-keyword">import</span> modeling</code>
+          </pre>
+        </div>
+        <div class="xiaoshujiang_code_container">
+          <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+            <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+            <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+            <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+            <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+            <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+            <span class="xiaoshujiang_code_title"></span>
+            <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;6行</span>
+          </div>
+          <pre>
+            <code class="language-python hljs" data-info="python">model = modeling(estimator=grid.best_estimator,params=grid.best_params)
+              model.Fit(tr_scaled_x.loc[:,grid.best_features], tr_y) model.Predict(te_scaled_x.loc[:,grid.best_features],te_y)
+              model.CrossVal(cv=
+              <span class="hljs-string">"LOO"</span>)
+              <span class="hljs-comment"># cv可以为'LOO'或正整数，也可以为一个交叉验证生成器对象如`Kfold`、`LeaveOneOut`等</span>
+              model.ShowResults(show_cv=
+              <span class="hljs-keyword">True</span>, make_fig=
+              <span class="hljs-keyword">False</span>) model.SaveResults(
+              <span class="hljs-string">'./results.csv'</span>,notes=
+              <span class="hljs-string">'自己定义的一些备注信息'</span>)</code>
+          </pre>
+        </div>
+      </li>
+      <li>
+        <p class="xsj_paragraph xsj_paragraph_level_4">
+          <code>modeling</code>模块也可以传入外部定义好的学习器对象和对应的超参数字典，以
+          <code>SVC</code>为例：</p>
+        <div class="xiaoshujiang_code_container">
+          <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+            <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+            <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+            <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+            <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+            <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+            <span class="xiaoshujiang_code_title"></span>
+            <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+          </div>
+          <pre>
+            <code class="language-python hljs" data-info="python">
+              <span class="hljs-keyword">from</span> QSAR_package.model_evaluation
+              <span class="hljs-keyword">import</span> modeling
+              <span class="hljs-keyword">from</span> sklearn.svm
+              <span class="hljs-keyword">import</span> SVC</code>
+          </pre>
+        </div>
+        <div class="xiaoshujiang_code_container">
+          <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+            <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+            <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+            <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+            <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+            <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+            <span class="xiaoshujiang_code_title"></span>
+            <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;8行</span>
+          </div>
+          <pre>
+            <code class="language-python hljs" data-info="python">estimator = SVC() params = {
+              <span class="hljs-string">"C"</span>:
+              <span class="hljs-number">1</span>,
+              <span class="hljs-string">"gamma"</span>:
+              <span class="hljs-number">0.1</span>} model = modeling(estimator=estimator,params=params) model.Fit(tr_scaled_x,
+              tr_y) model.Predict(te_scaled_x,te_y) model.CrossVal(cv=
+              <span class="hljs-number">5</span>)
+              <span class="hljs-comment"># cv可以为'LOO'或正整数，也可以为一个交叉验证生成器对象如`Kfold`、`LeaveOneOut`等</span>
+              model.ShowResults(show_cv=
+              <span class="hljs-keyword">True</span>, make_fig=
+              <span class="hljs-keyword">False</span>) model.SaveResults(
+              <span class="hljs-string">'./results.csv'</span>,notes=
+              <span class="hljs-string">'自己定义的一些备注信息'</span>)</code>
+          </pre>
+        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <div class="line_item xiaoshujiang_element" data-line="235"></div>
+    <code>modelEvaluator</code>是一个独立的模型评价模块，可以直接传入真实值
+    <code>y_true</code>和预测值
+    <code>y_pred</code>，得到分类或回归的评价值，它能根据传入的
+    <code>y_true</code>自动识别其是属于分类数据还是回归数据。分类任务的预测结果评价值包括
+    <code>Accuracy</code>、
+    <code>MCC</code>、
+    <code>SE</code>、
+    <code>SP</code>、
+    <code>tp</code>、
+    <code>tn</code>、
+    <code>fp</code>、
+    <code>fn</code>，回归任务的预测结果评价值包括
+    <code>R2</code>、
+    <code>RMSE</code>、
+    <code>MAE</code>，这些可以通过
+    <code>modelEvaluator</code>实例的属性查看。
+    <code>modeling</code>模块的模型评价方法就是继承自
+    <code>modelEvaluator</code>模块。用法如下（以回归任务的预测结果评价为例）：
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;1行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">
+          <span class="hljs-keyword">from</span> QSAR_package.model_evaluation
+          <span class="hljs-keyword">import</span> modelEvaluator</code>
+      </pre>
+    </div>
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;4行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">evaluator = modelEvaluator(y_true,y_pred) r2 = evaluator.r2 rmse = evaluator.rmse
+          mae = evaluator.mae</code>
+      </pre>
+    </div>
+    也可以直接查看该实例对象的属性字典来查看所有评价值：
+    <div class="xiaoshujiang_code_container">
+      <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+        <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+        <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+        <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+        <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+        <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+        <span class="xiaoshujiang_code_title"></span>
+        <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;3行</span>
+      </div>
+      <pre>
+        <code class="language-python hljs" data-info="python">evaluator = modelEvaluator(y_true,y_pred) all_metrics = dict(evaluator.__dict__.items())
+          print(all_metrics)
+        </code>
+      </pre>
+    </div>
+    <blockquote>
+      <p class="xsj_paragraph xsj_paragraph_level_3">{'r2': 0.7373, 'rmse': 0.6008, 'mae': 0.5395}</p>
+    </blockquote>
+  </li>
+</ul>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="253"></div>
+<div class="xiaoshujiang_element xsj_anchor">
+  <a name="720e9878de696b0e8bdbde585a5e6a8a1e59e8be8bf9be8a18ce9a284e6b58b_17" class="blank_anchor_name"></a>
+  <a id="720e9878de696b0e8bdbde585a5e6a8a1e59e8be8bf9be8a18ce9a284e6b58b_17"
+  class="blank_anchor_id"></a>
+  <a name="7-重新载入模型进行预测" class="blank_anchor_name"></a>
+  <a id="7-重新载入模型进行预测" class="blank_anchor_id"></a>
+</div>
+<h2 class="xsj_heading_hash xsj_heading xsj_heading_h2">
+  <span class="xsj_heading_content">7. 重新载入模型进行预测</span>
+</h2>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="254"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">在使用
+  <code>modeling</code>模块的时候，如果保存了模型文件，则可以在后期重新导入模型，并使用该模型对某数据集进行预测，需要注意的是，用来进行预测的特征数据必须与所导入模型的原始训练数据在列方向上保持一致，且经过与原始训练数据相同的压缩过程，示例如下：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="255"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;2行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">
+      <span class="hljs-keyword">from</span> sklearn.externals
+      <span class="hljs-keyword">import</span> joblib
+      <span class="hljs-keyword">from</span> QSAR_package.data_scale
+      <span class="hljs-keyword">import</span> dataScale</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="260"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;6行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">tr_scaled_x = scaler.FitTransform(tr_x)
+      <span class="hljs-comment"># tr_x中的描述符需与建模时所用的描述符数据完全一致，才能重现结果</span>
+      te_scaled_x = scaler.Transform(te_x,DataSet=
+      <span class="hljs-string">'test'</span>)
+      <span class="hljs-comment"># te_x中只要包含所有tr_x中出现的描述符数据即可，压缩过程会自动从中提取所需要的列</span>
+
+      model = joblib.load(
+      <span class="hljs-string">"./SVR.model"</span>) tr_pred_y = model.predict(tr_scaled_x) te_pred_y =
+      model.predict(te_scaled_x)</code>
+  </pre>
+</div>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="268"></div>
+<p class="xsj_paragraph xsj_paragraph_level_0">如果还想对预测结果进行评价，可以使用
+  <code>modelEvaluator</code>模块，只需传入真实值与预测值即可：</p>
+<div class="line_item line_item_display xiaoshujiang_element" data-line="269"></div>
+<div class="xiaoshujiang_code_container">
+  <div class="xiaoshujiang_code_buttons xiaoshujiang_element xiaoshujiang_contain_title">
+    <a class="xiaoshujiang_code_collapse_button hljs-keyword" title="折叠代码"><i class="far fa-minus-square"></i></a>
+    <a class="xiaoshujiang_code_expand_button hljs-keyword" title="展开代码"><i class="far fa-plus-square"></i></a>
+    <a class="xiaoshujiang_code_raw_button hljs-keyword" title="查看原文"><i class="fa fa-code"></i></a>
+    <a class="xiaoshujiang_code_download_button hljs-keyword" title="下载代码"><i class="fa fa-download"></i></a>
+    <a class="xiaoshujiang_code_image_button hljs-keyword" title="拍照成代码图片"><i class="fa fa-camera"></i></a>
+
+    <span class="xiaoshujiang_code_title"></span>
+    <span class="xiaoshujiang_code_infos">python&nbsp;&nbsp;&nbsp;&nbsp;4行</span>
+  </div>
+  <pre>
+    <code class="language-python hljs" data-info="python">tr_eva = modelEvaluator(tr_y, tr_pred_y) te_eva = modelEvaluator(te_y, te_pred_y)
+      print(tr_eva.r2,tr_eva.rmse,tr_eva.mae) print(te_eva.r2,te_eva.rmse,te_eva.mae)
+    </code>
+  </pre>
+</div>
+<blockquote>
+  <p class="xsj_paragraph xsj_paragraph_level_1">0.9263 0.3442 0.4126
+    <br> 0.5377 0.8584 0.6257</p>
+</blockquote>
