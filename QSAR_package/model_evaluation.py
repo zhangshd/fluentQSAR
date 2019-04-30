@@ -4,8 +4,8 @@
 
 from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absolute_error,mean_squared_error
 from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold,StratifiedKFold
-import matplotlib
-matplotlib.use('AGG')
+# import matplotlib
+# matplotlib.use('AGG')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
