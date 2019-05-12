@@ -193,7 +193,7 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     ```
     其中`fold`为网格寻优中交叉验证的重数，`repeat`为网格寻优的重复次数；
     然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器。
-- 使用`gridSearchPlus`模块可以通过字符串直接指定预定义好的学习器和对应的参数字典及打分器，现支持的算法有"SVC"、"DTC"、"RFC"、"SVR"、"RFR"，调用代码（不带描述符数量的寻优）如下：
+- 使用`gridSearchPlus`模块可以通过字符串直接指定预定义好的学习器和对应的参数字典及打分器，现支持的算法有"SVC"（分类）、"DTC"（分类）、"RFC"（分类）、"SVR"（回归）、"RFR"（回归），调用代码（不带描述符数量的寻优）如下：
     ```python
     from QSAR_package.grid_search import gridSearchPlus
     ```

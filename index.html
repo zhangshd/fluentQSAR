@@ -202,7 +202,7 @@
 <span class="n">tr_ranked_x</span> <span class="o">=</span> <span class="n">rfe</span><span class="o">.</span><span class="n">tr_ranked_x</span>
 <span class="n">te_ranked_x</span> <span class="o">=</span> <span class="n">te_scaled_x</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">tr_ranked_x</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 </code></pre></div></div>
-<p>目前支持字符串指定的学习器有”SVC”(分类)、”RFC”（分类）、”SVR”（回归）、”RFR”（回归），如果想尝试其他学习器，可以直接让<code class="highlighter-rouge">estimator</code>参数等于一个自定义的学习器对象，前提是该学习器对象有<code class="highlighter-rouge">coef_</code>或<code class="highlighter-rouge">feature_importance_</code>属性，详见<a href="https://scikit-learn.org/stable/modules/feature_selection.html#rfe">sklearn文档中RFE算法的介绍</a></p>
+<p>目前支持字符串指定的学习器有”SVC”（分类）、”RFC”（分类）、”SVR”（回归）、”RFR”（回归），如果想尝试其他学习器，可以直接让<code class="highlighter-rouge">estimator</code>参数等于一个自定义的学习器对象，前提是该学习器对象有<code class="highlighter-rouge">coef_</code>或<code class="highlighter-rouge">feature_importance_</code>属性，详见<a href="https://scikit-learn.org/stable/modules/feature_selection.html#rfe">sklearn文档中RFE算法的介绍</a></p>
 
 <h2 id="5-参数寻优">5. 参数寻优</h2>
 <h3 id="51-不带描述符数量的重复网格寻优">5.1 不带描述符数量的重复网格寻优</h3>
@@ -224,7 +224,7 @@
     <p>其中<code class="highlighter-rouge">fold</code>为网格寻优中交叉验证的重数，<code class="highlighter-rouge">repeat</code>为网格寻优的重复次数；
   然后可以通过<code class="highlighter-rouge">grid.best_params</code>获取最优参数，通过<code class="highlighter-rouge">grid.best_estimator</code>获取拟合好的学习器。</p>
   </li>
-  <li>使用<code class="highlighter-rouge">gridSearchPlus</code>模块可以通过字符串直接指定预定义好的学习器和对应的参数字典及打分器，现支持的算法有”SVC”、”DTC”、”RFC”、”SVR”、”RFR”，调用代码（不带描述符数量的寻优）如下：
+  <li>使用<code class="highlighter-rouge">gridSearchPlus</code>模块可以通过字符串直接指定预定义好的学习器和对应的参数字典及打分器，现支持的算法有”SVC”（分类）、”DTC”（分类）、”RFC”（分类）、”SVR”（回归）、”RFR”（回归），调用代码（不带描述符数量的寻优）如下：
     <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kn">from</span> <span class="nn">QSAR_package.grid_search</span> <span class="kn">import</span> <span class="n">gridSearchPlus</span>
 </code></pre></div>    </div>
     <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">grid</span> <span class="o">=</span> <span class="n">gridSearchPlus</span><span class="p">(</span><span class="n">grid_estimatorName</span><span class="o">=</span><span class="s">'SVC'</span><span class="p">,</span> <span class="n">fold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
