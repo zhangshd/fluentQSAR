@@ -309,7 +309,7 @@ import numpy as np
 scaler = dataScale(scale_range=(0.1, 0.9))
 modeling_features = np.loadtxt('./best_features.txt',dtype=np.str)   # 读取建模所用到的描述符名称，这个文件可以在寻优结束的时候通过`grid.best_features`保存出来（前面寻优过程有介绍）
 tr_scaled_x = scaler.FitTransform(tr_x.loc[:,modeling_features])    # tr_scaled_x中的描述符需与建模时所用的描述符数据完全一致，才能重现结果
-te_scaled_x = scaler.Transform(te_x,DataSet='test')   # te_x中只要包含所有tr_x中出现的描述符数据即可，压缩过程会自动从中提取所需要的列
+te_scaled_x = scaler.Transform(te_x,DataSet='test')   # te_x中只要包含所有tr_scaled_x中出现的描述符数据即可，压缩过程会自动从中提取所需要的列
 
 model = joblib.load("./SVR.model")
 tr_pred_y = model.predict(tr_scaled_x)  
