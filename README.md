@@ -201,7 +201,12 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5)
     grid.Fit(tr_scaled_x,tr_y)
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器。还可以通过`grid.best_features`获取最终会用于建模的那些描述符的名称
+    ，推荐将这些描述符的名称保存到txt文件中，便于后期重新载入模型的时候使用，可使用以下代码：
+    ```python
+    with open('./best_features.txt','w') as fobj:
+        fobj.write('\n'.join(grid.best_features))
+    ```
 ### 5.2 带描述符数量的重复网格寻优
 因为前面已经介绍了可以通过Pearson相关性或者RFE方法对描述符数据排序，得到一个在列方向上有序的二维数据（DataFrame或numpy数组），如此以来，便可以将描述符的数量`n`也作为一个超参数，参与寻优过程，在网格寻优的外层套一个循环，每次循环取前`n`个描述符的数据，再用此数据进行重复网格寻优，最后找出在交叉验证的得分最高的描述符数量与参数组合。
 - 使用`gridSearchBase`模块进行带描述符数量的重复网格寻优
@@ -215,7 +220,7 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))  # features_range为描述符数量的迭代范围，参数为包含两个整数的元组或列表形式，其中第一个整数为描述符数量的下限，第二个整数为描述符数量的上限
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。推荐将最终选择的描述符保存到txt文件中，可使用以下代码：
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器。还可以通过`grid.best_features`获取最终选择的描述符描述符的名称，推荐将这些描述符的名称保存到txt文件中，便于后期重新载入模型的时候使用，可使用以下代码：
     ```python
     with open('./best_features.txt','w') as fobj:
         fobj.write('\n'.join(grid.best_features))
@@ -228,7 +233,7 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的若干个描述符名称。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的若干个描述符的名称。
 ### 5.3 Early_stop策略——降低过拟合程度
 正常情况gridsearch所选的最优参数组合是交叉验证平均得分（mean_test_score）最高的参数组合，如果采用Early_stop策略，则会从（mean_test_score）最高分开始向下寻找（分值按降序排列）得分与最高分有显著差异的次优参数组合， 显著差异的标准就是该分值与最高分的差值占该分值的比率（取绝对值）大于指定的early_stop数值，最终选择的参数组合是降序排名在上述次优参数组合前一名的参数组合，在`gridSearchBase`和`gridSearchPlus`中都可以设置`early_stop`参数，默认为`None`，有效的`early_stop`参数值为`0`到`1`之间的浮点数，具体例子如下：
 ```python
@@ -302,7 +307,7 @@ import numpy as np
 
 ```python
 scaler = dataScale(scale_range=(0.1, 0.9))
-modeling_features = np.loadtxt('./best_features.txt',dtype=np.str)   # 读取建模所用到的描述符名称
+modeling_features = np.loadtxt('./best_features.txt',dtype=np.str)   # 读取建模所用到的描述符名称，这个文件可以在寻优结束的时候通过`grid.best_features`保存出来（前面寻优过程有介绍）
 tr_scaled_x = scaler.FitTransform(tr_x.loc[:,modeling_features])    # tr_x中的描述符需与建模时所用的描述符数据完全一致，才能重现结果
 te_scaled_x = scaler.Transform(te_x,DataSet='test')   # te_x中只要包含所有tr_x中出现的描述符数据即可，压缩过程会自动从中提取所需要的列
 
