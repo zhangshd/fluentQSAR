@@ -215,7 +215,11 @@ te_ranked_x = te_scaled_x.loc[:,tr_ranked_x.columns]
     grid = gridSearchBase(fold=5, grid_estimator=grid_estimator, grid_dict=grid_dict, grid_scorer=grid_scorer, repeat=10)
     grid.FitWithFeaturesNum(tr_scaled_x, tr_y,features_range=(5,20))  # features_range为描述符数量的迭代范围，参数为包含两个整数的元组或列表形式，其中第一个整数为描述符数量的下限，第二个整数为描述符数量的上限
     ```
-    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。
+    然后可以通过`grid.best_params`获取最优参数，通过`grid.best_estimator`获取拟合好的学习器，还可以通过`grid.best_features`获取最终选择的描述符名称。推荐将最终选择的描述符保存到txt文件中，可使用以下代码：
+    ```python
+    with open('./best_features.txt','w') as fobj:
+        fobj.write('\n'.join(grid.best_features))
+    ```
 -  使用`gridSearchPlus`模块进行带描述符数量的重复网格寻优
     ```python
     from QSAR_package.grid_search import gridSearchPlus
@@ -293,11 +297,13 @@ grid = gridSearchPlus(grid_estimatorName='SVC', fold=5, repeat=5, early_stop=0.0
 ```python
 from sklearn.externals import joblib
 from QSAR_package.data_scale import dataScale
+import numpy as np
 ```
 
 ```python
 scaler = dataScale(scale_range=(0.1, 0.9))
-tr_scaled_x = scaler.FitTransform(tr_x)    # tr_x中的描述符需与建模时所用的描述符数据完全一致，才能重现结果
+modeling_features = np.loadtxt('./best_features.txt',dtype=np.str)   # 读取建模所用到的描述符名称
+tr_scaled_x = scaler.FitTransform(tr_x.loc[:,modeling_features])    # tr_x中的描述符需与建模时所用的描述符数据完全一致，才能重现结果
 te_scaled_x = scaler.Transform(te_x,DataSet='test')   # te_x中只要包含所有tr_x中出现的描述符数据即可，压缩过程会自动从中提取所需要的列
 
 model = joblib.load("./SVR.model")
