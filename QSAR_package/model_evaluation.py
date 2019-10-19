@@ -39,6 +39,8 @@ class modelEvaluator(object):
     def __Clf_metrics(self,y_true,y_pred):
         """计算二分类模型预测结果的TP、TN、FP、FN以及accuracy、MCC、SE、SP"""
         
+        y_true=np.array(y_true)
+        y_pred=np.array(y_pred)
         self.accuracy = round(accuracy_score(y_true, y_pred),4)
         self.mcc = round(matthews_corrcoef(y_true, y_pred),2)
         self.tp = 0
@@ -59,6 +61,8 @@ class modelEvaluator(object):
         
     def __Rgr_metrics(self,y_true,y_pred):
         """计算回归模型预测结果的R2、RMSE、MAE"""
+        y_true=np.array(y_true)
+        y_pred=np.array(y_pred)
         self.r2 = round(r2_score(y_true, y_pred),4)
         self.rmse = round(mean_squared_error(y_true, y_pred)**0.5,4)
         self.mae = round(mean_absolute_error(y_true, y_pred),4)
