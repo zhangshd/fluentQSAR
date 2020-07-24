@@ -26,7 +26,7 @@ class modelEvaluator(object):
            y_true：array型(一维)，样本label真实值
            y_pred：array型(一维或二维)，样本label预测值或预测概率
            model_kind：str型，可以指定为‘clf’(分类)或‘rgr’(回归)，如果不指定则会自动识别是分类任务还是回归任务
-           is_prob：bool型，是否为分类模型的预测概率值，此概率值为`二分类`中label为`1`的概率值
+           is_prob：bool型，是否为分类模型的预测概率值，此概率值如果是一维的话指`二分类`中label为`1`的概率值
            """
         if model_kind == None:
             if (len(np.unique(y_true))<=5) or (is_prob==True) or (len(y_pred.shape)==2): # 根据标签列的多样性确定是分类还是回归
