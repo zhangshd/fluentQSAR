@@ -2,7 +2,8 @@
 
 # Author: Zhang Shengde <zhangshd@foxmail.com>
 
-from sklearn.metrics import accuracy_score,matthews_corrcoef,r2_score,mean_absolute_error,mean_squared_error
+from sklearn.metrics import accuracy_score,matthews_corrcoef,\
+                            r2_score,mean_absolute_error,mean_squared_error,roc_auc_score
 from sklearn.model_selection import cross_val_predict,LeaveOneOut,KFold,StratifiedKFold
 # import matplotlib
 # matplotlib.use('AGG')
@@ -19,30 +20,40 @@ __all__ = ["modelEvaluator","modeling"]
 
 class modelEvaluator(object):
     """计算用于评价二分类模型或回归模型的统计量"""
-    def __init__(self,y_true,y_pred,model_kind=None):
+    def __init__(self,y_true,y_pred,model_kind=None,is_prob=False):
         """参数：
            -----
            y_true：array型(一维)，样本label真实值
-           y_pred：array型(一维)，样本label预测值
+           y_pred：array型(一维或二维)，样本label预测值或预测概率
            model_kind：str型，可以指定为‘clf’(分类)或‘rgr’(回归)，如果不指定则会自动识别是分类任务还是回归任务
+           is_prob：bool型，是否为分类模型的预测概率值，此概率值为`二分类`中label为`1`的概率值
            """
         if model_kind == None:
-            if len(np.unique(y_true))<=5: # 根据标签列的多样性确定是分类还是回归
-                self.__Clf_metrics(y_true,y_pred)
+            if (len(np.unique(y_true))<=5) or (is_prob==True) or (len(y_pred.shape)==2): # 根据标签列的多样性确定是分类还是回归
+                self.__Clf_metrics(y_true,y_pred,is_prob=is_prob)
             else:
                 self.__Rgr_metrics(y_true,y_pred)
         elif model_kind == 'clf':
-            self.__Clf_metrics(y_true,y_pred)
+            self.__Clf_metrics(y_true,y_pred,is_prob=is_prob)
         else:
             self.__Rgr_metrics(y_true,y_pred)
             
-    def __Clf_metrics(self,y_true,y_pred):
-        """计算二分类模型预测结果的TP、TN、FP、FN以及accuracy、MCC、SE、SP"""
-        
+    def __Clf_metrics(self,y_true,y_pred,is_prob=False):
+        """计算二分类模型预测结果的TP、TN、FP、FN以及accuracy、MCC、SE、SP、AUC"""
+
         y_true=np.array(y_true)
         y_pred=np.array(y_pred)
-        self.accuracy = round(accuracy_score(y_true, y_pred),4)
-        self.mcc = round(matthews_corrcoef(y_true, y_pred),2)
+        y_pred_prob = y_pred.copy()
+        if len(y_pred_prob.shape) == 2:
+            y_pred = y_pred_prob.argmax(axis=1)
+            y_pred_prob = y_pred_prob[:, 1]
+
+        elif (is_prob == True) and (len(y_pred_prob.shape) == 1):
+            y_pred = (y_pred_prob >= 0.5).astype(np.int8)
+
+        self.accuracy = round(accuracy_score(y_true, y_pred), 4)
+        self.mcc = round(matthews_corrcoef(y_true, y_pred), 4)
+        self.auc = round(roc_auc_score(y_true, y_pred_prob), 4)
         self.tp = 0
         self.fp = 0
         self.tn = 0
